@@ -8,7 +8,7 @@ import 'login_controller.dart';
 class TreinoController {
   void adicionar(context, Treino t) {
     FirebaseFirestore.instance
-        .collection('exercicios')
+        .collection('treino')
         .add(t.toJson())
         .then((resultado) => sucesso(context, 'Treino adicionado com sucesso'))
         .catchError((e) => erro(context, 'Não foi possível adicionar a Treino'))
@@ -18,13 +18,13 @@ class TreinoController {
   //Listar todas as Treinos do Usuário autenticado
   listar() {
     return FirebaseFirestore.instance
-        .collection('Treinos')
+        .collection('treino')
         .where('uid', isEqualTo: LoginController().idUsuario());
   }
 
   void atualizar(context, id, Treino t) {
     FirebaseFirestore.instance
-        .collection('Treinos')
+        .collection('treino')
         .doc(id)
         .update(t.toJson())
         .then((resultado) => sucesso(context, 'Treino atualizado com sucesso'))
@@ -34,7 +34,7 @@ class TreinoController {
 
   void excluir(context, id) {
     FirebaseFirestore.instance
-        .collection('Treinos')
+        .collection('treino')
         .doc(id)
         .delete()
         .then((resultado) => sucesso(context, 'Treino excluído com sucesso'))

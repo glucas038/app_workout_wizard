@@ -36,7 +36,7 @@ class LoginController {
         .signInWithEmailAndPassword(email: email, password: senha)
         .then((resultado) {
       sucesso(context, 'Usuário autenticado com sucesso!');
-      Navigator.pushNamed(context, 'principal');
+      Navigator.pushNamed(context, 'treinos');
     }).catchError((e) {
       switch (e.code) {
         case 'invalid-credential':
