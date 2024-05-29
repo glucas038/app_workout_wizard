@@ -99,9 +99,10 @@ class _ExerciciosViewState extends State<ExerciciosView> {
                                     txtNomeExercicio.text =
                                         item['nm_exercicio'];
                                     txtGrupoMusc.text = item['grupo_muscular'];
-                                    txtCarga.text = item['carga'];
-                                    txtSeries.text = item['series'];
-                                    txtRepeticoes = item['repeticoes'];
+                                    txtCarga.text = item['carga'].toString();
+                                    txtSeries.text = item['series'].toString();
+                                    txtRepeticoes.text =
+                                        item['repeticoes'].toString();
                                     salvarTreino(context, docId: id);
                                   },
                                   icon: Icon(Icons.edit_rounded),
