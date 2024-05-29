@@ -4,10 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:workout_wizard/controller/exercicio_controller.dart';
 import 'package:workout_wizard/model/exercicio.dart';
-
 import '../controller/login_controller.dart';
-import '../controller/treino_controller.dart';
-import '../model/treino.dart';
 
 class ExerciciosView extends StatefulWidget {
   final String treinoId;
