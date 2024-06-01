@@ -34,9 +34,8 @@ class MainApp extends StatelessWidget {
       title: 'Tarefas',
       initialRoute: 'login',
       routes: {
-        'login': (context) => LoginView(), // Alterar depois
-        'treinos': (context) => TreinosView(), // Alterar depois
-        //'exercicios': (context) => ExerciciosView(), // Alterar depois
+        'login': (context) => LoginView(),
+        'treinos': (context) => TreinosView(),
       },
     );
   }
