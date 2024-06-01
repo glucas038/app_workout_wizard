@@ -33,7 +33,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Avaliações de Treinos',
-      initialRoute: 'login',
+      initialRoute: 'avaliacao',
       routes: {
         'avaliacao': (context) => AvaliacaoView(),
         'avaliacao_exames': (context) => AvaliacaoExamesView(),
