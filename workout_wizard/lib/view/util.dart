@@ -1,8 +1,8 @@
+import 'package:flutter/material.dart';
+
 //
 // MENSAGEM DE ERRO
 //
-import 'package:flutter/material.dart';
-
 void erro(context, String msg) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(

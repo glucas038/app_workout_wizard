@@ -23,15 +23,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         return windows;
       case TargetPlatform.linux:
@@ -58,10 +52,28 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyALpScMWu-WCcfs0rvtJoQKCwjmse3aYc8',
-    appId: '1:903320001350:android:46c78e6dcb0b522b2aa347',
+    appId: '1:903320001350:android:4f3699be6c7e3c812aa347',
     messagingSenderId: '903320001350',
     projectId: 'workout-wizard-a528c',
     storageBucket: 'workout-wizard-a528c.appspot.com',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyC4jsMwVGVTsomRWdDHH8WXAHS3Szv2xs4',
+    appId: '1:903320001350:ios:ca8f74a86d8c06262aa347',
+    messagingSenderId: '903320001350',
+    projectId: 'workout-wizard-a528c',
+    storageBucket: 'workout-wizard-a528c.appspot.com',
+    iosBundleId: 'com.example.workoutWizard',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyC4jsMwVGVTsomRWdDHH8WXAHS3Szv2xs4',
+    appId: '1:903320001350:ios:ca8f74a86d8c06262aa347',
+    messagingSenderId: '903320001350',
+    projectId: 'workout-wizard-a528c',
+    storageBucket: 'workout-wizard-a528c.appspot.com',
+    iosBundleId: 'com.example.workoutWizard',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

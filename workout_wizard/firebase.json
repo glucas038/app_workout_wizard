@@ -1,1 +1,25 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"workout-wizard-a528c","appId":"1:903320001350:android:46c78e6dcb0b522b2aa347","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"workout-wizard-a528c","configurations":{"android":"1:903320001350:android:46c78e6dcb0b522b2aa347","web":"1:903320001350:web:8265e10d5f00ee672aa347","windows":"1:903320001350:web:76d1efa4d166925f2aa347"}}}}}}
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "workout-wizard-a528c",
+                    "appId": "1:903320001350:android:4f3699be6c7e3c812aa347",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "workout-wizard-a528c",
+                    "configurations": {
+                        "android": "1:903320001350:android:4f3699be6c7e3c812aa347",
+                        "ios": "1:903320001350:ios:ca8f74a86d8c06262aa347",
+                        "macos": "1:903320001350:ios:ca8f74a86d8c06262aa347",
+                        "web": "1:903320001350:web:8265e10d5f00ee672aa347",
+                        "windows": "1:903320001350:web:76d1efa4d166925f2aa347"
+                    }
+                }
+            }
+        }
+    }
+}

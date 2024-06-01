@@ -7,7 +7,6 @@ import 'package:workout_wizard/view/avaliacao/avaliacao_exames_view.dart';
 import 'package:workout_wizard/view/avaliacao/avaliacao_medidas_corporais_view.dart';
 import 'package:workout_wizard/view/avaliacao/avaliacao_view.dart';
 
-
 Future<void> main() async {
   //
   // Firebase
