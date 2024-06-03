@@ -12,12 +12,16 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
+  String email = 'lucas@gmail.com';
+  String senha = '123456';
   var txtEmail = TextEditingController();
   var txtSenha = TextEditingController();
   var txtEmailEsqueceuSenha = TextEditingController();
 
   @override
   void initState() {
+    txtEmail.text = email;
+    txtSenha.text = senha;
     super.initState();
   }
 

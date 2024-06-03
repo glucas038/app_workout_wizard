@@ -34,7 +34,7 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
   void fetchAvaliacaoData() async {
     try {
       DocumentReference avaliacaoRef =
-          AvaliacaoController().listarAvaliacao(docId);
+          AvaliacaoController().pegarAvaliacao(docId);
       DocumentSnapshot snapshot = await avaliacaoRef.get();
       if (snapshot.exists) {
         setState(() {
@@ -61,7 +61,6 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
       appBar: AppBar(
         backgroundColor: Colors.green.shade200,
         title: Text('Avaliação física'),
-        automaticallyImplyLeading: false,
       ),
       backgroundColor: Colors.grey.shade100,
       body: isLoading
@@ -86,9 +85,9 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
                           ),
                           SizedBox(height: 5),
                           Text(
-  avaliacaoData != null
-      ? "IMC: ${avaliacaoData!['imc'] != null ? avaliacaoData!['imc'].toStringAsFixed(2) : ''} - ${calcularCategoriaImc(avaliacaoData!['imc'])}"
-      : "",
+                            avaliacaoData != null
+                                ? "IMC: ${avaliacaoData!['imc'] != null ? avaliacaoData!['imc'].toStringAsFixed(2) : ''} - ${calcularCategoriaImc(avaliacaoData!['imc'])}"
+                                : "",
                             style: TextStyle(fontSize: 16),
                           ),
                         ],
@@ -169,17 +168,17 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
   }
 
   String calcularCategoriaImc(double? imc) {
-  if (imc != null) {
-    if (imc < 18.5) {
-      return "Abaixo do Peso";
-    } else if (imc >= 18.5 && imc < 25) {
-      return "Peso Normal";
-    } else if (imc >= 25 && imc < 30) {
-      return "Acima do Peso";
-    } else {
-      return "Obeso";
+    if (imc != null) {
+      if (imc < 18.5) {
+        return "Abaixo do Peso";
+      } else if (imc >= 18.5 && imc < 25) {
+        return "Peso Normal";
+      } else if (imc >= 25 && imc < 30) {
+        return "Acima do Peso";
+      } else {
+        return "Obeso";
+      }
     }
+    return "";
   }
-  return "";
-}
 }

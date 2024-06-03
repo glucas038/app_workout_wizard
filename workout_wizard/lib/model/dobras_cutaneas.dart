@@ -1,51 +1,39 @@
 class DobrasCutaneas {
   //String protocolo;
-  double triceps;
-  double peitoral;
-  double axilarMedia;
-  double subescapular;
-  double supraIliaca;
-  double abdominal;
-  double coxa;
-  double panturrilha;
-  double punho;
-  double femur;
-  double umero;
-  double tornozelo;
-
-  DobrasCutaneas.empty()
-      : triceps = 0.0,
-        peitoral = 0.0,
-        axilarMedia = 0.0,
-        subescapular = 0.0,
-        supraIliaca = 0.0,
-        abdominal = 0.0,
-        coxa = 0.0,
-        panturrilha = 0.0,
-        punho = 0.0,
-        femur = 0.0,
-        umero = 0.0,
-        tornozelo = 0.0;
+  String avalicaoId;
+  double? triceps;
+  double? peitoral;
+  double? axilarMedia;
+  double? subescapular;
+  double? supraIliaca;
+  double? abdominal;
+  double? coxa;
+  double? panturrilha;
+  double? punho;
+  double? femur;
+  double? umero;
+  double? tornozelo;
 
   DobrasCutaneas({
-    //required this.protocolo,
-    required this.triceps,
-    required this.peitoral,
-    required this.axilarMedia,
-    required this.subescapular,
-    required this.supraIliaca,
-    required this.abdominal,
-    required this.coxa,
-    required this.panturrilha,
-    required this.punho,
-    required this.femur,
-    required this.umero,
-    required this.tornozelo,
+    required this.avalicaoId,
+    this.triceps,
+    this.peitoral,
+    this.axilarMedia,
+    this.subescapular,
+    this.supraIliaca,
+    this.abdominal,
+    this.coxa,
+    this.panturrilha,
+    this.punho,
+    this.femur,
+    this.umero,
+    this.tornozelo,
   });
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       //'protocolo': protocolo,
+      'avalicaoId': avalicaoId, // 'uId' é o 'id' do usuário, que é o 'uId' do 'FirebaseAuth
       'triceps': triceps,
       'peitoral': peitoral,
       'axilarMedia': axilarMedia,
@@ -63,6 +51,7 @@ class DobrasCutaneas {
 
   factory DobrasCutaneas.fromJson(Map<String, dynamic> json) {
     return DobrasCutaneas(
+      avalicaoId: json['avalicaoId'] as String,
       triceps: (json['triceps'] as num?)?.toDouble() ?? 0.0,
       peitoral: (json['peitoral'] as num?)?.toDouble() ?? 0.0,
       axilarMedia: (json['axilarMedia'] as num?)?.toDouble() ?? 0.0,

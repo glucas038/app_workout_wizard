@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:intl/intl.dart';
 import 'package:workout_wizard/controller/avaliacao_controller.dart';
+import 'package:workout_wizard/controller/login_controller.dart';
 import 'package:workout_wizard/model/avaliacao.dart';
 
 class AvaliacaoView extends StatefulWidget {
@@ -24,6 +25,16 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
       appBar: AppBar(
         title: Text('Avaliações físicas'),
         automaticallyImplyLeading: false,
+        backgroundColor: Colors.green.shade200,
+        actions: [
+          IconButton(
+            onPressed: () {
+              //LoginController().logout();
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.exit_to_app),
+          )
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -144,11 +155,13 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
             TextButton(
               onPressed: () {
                 var avaliacao = Avaliacao(
+                  uId: LoginController().idUsuario(),
                   peso: double.parse(txtPeso.text),
                   altura: double.parse(txtAltura.text),
                 );
                 //avaliacao.data = DateTime.now();
                 AvaliacaoController().adicionarAvaliacao(context, avaliacao);
+                
               },
               child: Text('Salvar'),
             ),

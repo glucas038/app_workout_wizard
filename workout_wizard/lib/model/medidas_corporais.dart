@@ -1,75 +1,58 @@
 class MedidasCorporais {
-  double pescoco;
-  double ombro;
-  double toraxInspirado;
-  double toraxExpirado;
-  double peitoral;
-  double cinturaEscapular;
-  double cintura;
-  double abdomen;
-  double quadril;
-  double coxaDireitaRelaxada;
-  double coxaDireitaContraida;
-  double coxaEsquerdaRelaxada;
-  double coxaEsquerdaContraida;
-  double panturrilhaDireita;
-  double panturrilhaEsquerda;
-  double bracoRelaxadoDireita;
-  double bracoContraidoDireita;
-  double bracoRelaxadoEsquerdo;
-  double bracoContraidoEsquerdo;
-  double antebracoDireito;
-  double antebracoEsquerdo;
+  String avalicaoId;
+  double? pescoco;
+double? ombro;
+double? toraxInspirado;
+double? toraxExpirado;
+double? peitoral;
+double? cinturaEscapular;
+double? cintura;
+double? abdomen;
+double? quadril;
+double? coxaDireitaRelaxada;
+double? coxaDireitaContraida;
+double? coxaEsquerdaRelaxada;
+double? coxaEsquerdaContraida;
+double? panturrilhaDireita;
+double? panturrilhaEsquerda;
+double? bracoRelaxadoDireita;
+double? bracoContraidoDireita;
+double? bracoRelaxadoEsquerdo;
+double? bracoContraidoEsquerdo;
+double? antebracoDireito;
+double? antebracoEsquerdo;
 
-  MedidasCorporais.empty()
-      : pescoco = 0.0,
-        ombro = 0.0,
-        toraxInspirado = 0.0,
-        toraxExpirado = 0.0,
-        peitoral = 0.0,
-        cinturaEscapular = 0.0,
-        cintura = 0.0,
-        abdomen = 0.0,
-        quadril = 0.0,
-        coxaDireitaRelaxada = 0.0,
-        coxaDireitaContraida = 0.0,
-        coxaEsquerdaRelaxada = 0.0,
-        coxaEsquerdaContraida = 0.0,
-        panturrilhaDireita = 0.0,
-        panturrilhaEsquerda = 0.0,
-        bracoRelaxadoDireita = 0.0,
-        bracoContraidoDireita = 0.0,
-        bracoRelaxadoEsquerdo = 0.0,
-        bracoContraidoEsquerdo = 0.0,
-        antebracoDireito = 0.0,
-        antebracoEsquerdo = 0.0;
+
+
 
   MedidasCorporais({
-    required this.pescoco,
-    required this.ombro,
-    required this.toraxInspirado,
-    required this.toraxExpirado,
-    required this.peitoral,
-    required this.cinturaEscapular,
-    required this.cintura,
-    required this.abdomen,
-    required this.quadril,
-    required this.coxaDireitaRelaxada,
-    required this.coxaDireitaContraida,
-    required this.coxaEsquerdaRelaxada,
-    required this.coxaEsquerdaContraida,
-    required this.panturrilhaDireita,
-    required this.panturrilhaEsquerda,
-    required this.bracoRelaxadoDireita,
-    required this.bracoContraidoDireita,
-    required this.bracoRelaxadoEsquerdo,
-    required this.bracoContraidoEsquerdo,
-    required this.antebracoDireito,
-    required this.antebracoEsquerdo,
+    required this.avalicaoId,
+    this.pescoco,
+  this.ombro,
+  this.toraxInspirado,
+  this.toraxExpirado,
+  this.peitoral,
+  this.cinturaEscapular,
+  this.cintura,
+  this.abdomen,
+  this.quadril,
+  this.coxaDireitaRelaxada,
+  this.coxaDireitaContraida,
+  this.coxaEsquerdaRelaxada,
+  this.coxaEsquerdaContraida,
+  this.panturrilhaDireita,
+  this.panturrilhaEsquerda,
+  this.bracoRelaxadoDireita,
+  this.bracoContraidoDireita,
+  this.bracoRelaxadoEsquerdo,
+  this.bracoContraidoEsquerdo,
+  this.antebracoDireito,
+  this.antebracoEsquerdo,
   });
 
  Map<String, dynamic> toJson() {
     return <String, dynamic>{
+      'avalicaoId': avalicaoId, // 'uId' é o 'id' do usuário, que é o 'uId' do 'FirebaseAuth  
       'pescoco': pescoco,
       'ombro': ombro,
       'toraxInspirado': toraxInspirado,
@@ -96,6 +79,7 @@ class MedidasCorporais {
 
   factory MedidasCorporais.fromJson(Map<String, dynamic> json) {
   return MedidasCorporais(
+    avalicaoId: json['avalicaoId'] as String,
     pescoco: (json['pescoco'] as num?)?.toDouble() ?? 0.0,
     ombro: (json['ombro'] as num?)?.toDouble() ?? 0.0,
     toraxInspirado: (json['toraxInspirado'] as num?)?.toDouble() ?? 0.0,

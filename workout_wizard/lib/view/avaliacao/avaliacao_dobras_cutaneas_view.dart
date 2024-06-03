@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:workout_wizard/controller/avaliacao_controller.dart';
-import 'package:workout_wizard/model/avaliacao.dart';
+import 'package:workout_wizard/controller/avaliacao_dobras_controller.dart';
 import 'package:workout_wizard/model/dobras_cutaneas.dart';
-import 'package:workout_wizard/model/medidas_corporais.dart';
 
 class AvaliacaoDobrasCutaneasView extends StatefulWidget {
-  const AvaliacaoDobrasCutaneasView({Key? key}) : super(key: key);
+  const AvaliacaoDobrasCutaneasView({super.key});
 
   @override
-  _AvaliacaoDobrasCutaneasViewState createState() =>
+  State<AvaliacaoDobrasCutaneasView> createState() =>
       _AvaliacaoDobrasCutaneasViewState();
 }
 
@@ -18,96 +15,67 @@ class _AvaliacaoDobrasCutaneasViewState
     extends State<AvaliacaoDobrasCutaneasView> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers for each field
-  final _tricepsController = TextEditingController();
-  final _peitoralController = TextEditingController();
-  final _axilarMediaController = TextEditingController();
-  final _subescapularController = TextEditingController();
-  final _supraIliacaController = TextEditingController();
-  final _abdominalController = TextEditingController();
-  final _coxaController = TextEditingController();
-  final _panturrilhaController = TextEditingController();
-  final _punhoController = TextEditingController();
-  final _femurController = TextEditingController();
-  final _umeroController = TextEditingController();
-  final _tornozeloController = TextEditingController();
-  // Add controllers for other fields as needed
+  final List<String> labels = [
+    'Tríceps',
+    'Peitoral',
+    'Axilar Média',
+    'Subescapular',
+    'Supra-ilíaca',
+    'Abdominal',
+    'Coxa',
+    'Panturrilha',
+  ];
+
+  final List<TextEditingController> controllers =
+      List.generate(12, (_) => TextEditingController());
 
   bool isLoading = true;
-  dynamic avaliacao;
   String? errorMessage;
-  String docId = '';
+  String? avaliacaoId;
+  bool isEditing = false;
+  String? dobrasId;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
-      final docId = ModalRoute.of(context)!.settings.arguments as String;
-      fetchDobrasCutaneas(docId);
-      print(docId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      avaliacaoId = ModalRoute.of(context)!.settings.arguments as String;
+      fetchDobrasCutaneas();
     });
   }
 
-  void fetchDobrasCutaneas(String docId) async {
+  void fetchDobrasCutaneas() async {
     try {
-      final avaliacaoSnapshot =
-          await AvaliacaoController().listarAvaliacao(docId).get();
-      if (avaliacaoSnapshot.exists) {
-        final dobrasCutaneasData = avaliacaoSnapshot['dobrasCutaneas'];
-        if (dobrasCutaneasData != null) {
-          avaliacao = Avaliacao.fromJson(avaliacaoSnapshot.data());
-          this.docId = docId;
-          final dobrasCutaneas = DobrasCutaneas.fromJson(dobrasCutaneasData);
-          setState(() {
-            _tricepsController.text = dobrasCutaneas.triceps != 0
-                ? dobrasCutaneas.triceps.toString()
-                : '';
-            _peitoralController.text = dobrasCutaneas.peitoral != 0
-                ? dobrasCutaneas.peitoral.toString()
-                : '';
-            _axilarMediaController.text = dobrasCutaneas.axilarMedia != 0
-                ? dobrasCutaneas.axilarMedia.toString()
-                : '';
-            _subescapularController.text = dobrasCutaneas.subescapular != 0
-                ? dobrasCutaneas.subescapular.toString()
-                : '';
-            _supraIliacaController.text = dobrasCutaneas.supraIliaca != 0
-                ? dobrasCutaneas.supraIliaca.toString()
-                : '';
-            _abdominalController.text = dobrasCutaneas.abdominal != 0
-                ? dobrasCutaneas.abdominal.toString()
-                : '';
-            _coxaController.text =
-                dobrasCutaneas.coxa != 0 ? dobrasCutaneas.coxa.toString() : '';
-            _panturrilhaController.text = dobrasCutaneas.panturrilha != 0
-                ? dobrasCutaneas.panturrilha.toString()
-                : '';
-            _punhoController.text = dobrasCutaneas.punho != 0
-                ? dobrasCutaneas.punho.toString()
-                : '';
-            _femurController.text = dobrasCutaneas.femur != 0
-                ? dobrasCutaneas.femur.toString()
-                : '';
-            _umeroController.text = dobrasCutaneas.umero != 0
-                ? dobrasCutaneas.umero.toString()
-                : '';
-            _tornozeloController.text = dobrasCutaneas.tornozelo != 0
-                ? dobrasCutaneas.tornozelo.toString()
-                : '';
-            isLoading = false;
-          });
+      print(avaliacaoId);
+      if (avaliacaoId != null) {
+        final dobrasSnapshot =
+            await AvaliacaoDobrasController.listarDobras(avaliacaoId!);
+        print(dobrasSnapshot.runtimeType);
+
+        if (dobrasSnapshot.docs.isNotEmpty) {
+          isEditing = true;
+          dobrasId = dobrasSnapshot.docs.first.id;
+          
+          final dobrasData =
+              dobrasSnapshot.docs.first.data() as Map<String, dynamic>;
+          
+          if (dobrasData != null) {
+            final dobrasCutaneas = DobrasCutaneas.fromJson(dobrasData);
+            setState(() {
+              for (int i = 0; i < labels.length; i++) {
+                final String label = labels[i];
+                final String value = getValueByLabel(label, dobrasCutaneas);
+                controllers[i].text = (value != '0') ? value : '';
+              }
+              isLoading = false;
+            });
+          }
         } else {
           setState(() {
-            errorMessage = 'Dados de dobras cutaneas não encontrados';
+            //errorMessage = 'Documento de avaliação não encontrado';
             isLoading = false;
           });
         }
-      } else {
-        setState(() {
-          print(docId);
-          errorMessage = 'Documento de avaliação não encontrado';
-          isLoading = false;
-        });
       }
     } catch (error) {
       setState(() {
@@ -117,13 +85,44 @@ class _AvaliacaoDobrasCutaneasViewState
     }
   }
 
+  String getValueByLabel(String label, DobrasCutaneas dobrasCutaneas) {
+    switch (label) {
+      case 'Tríceps':
+        return dobrasCutaneas.triceps.toString();
+      case 'Peitoral':
+        return dobrasCutaneas.peitoral.toString();
+      case 'Axilar Média':
+        return dobrasCutaneas.axilarMedia.toString();
+      case 'Subescapular':
+        return dobrasCutaneas.subescapular.toString();
+      case 'Supra-ilíaca':
+        return dobrasCutaneas.supraIliaca.toString();
+      case 'Abdominal':
+        return dobrasCutaneas.abdominal.toString();
+      case 'Coxa':
+        return dobrasCutaneas.coxa.toString();
+      case 'Panturrilha':
+        return dobrasCutaneas.panturrilha.toString();
+      default:
+        return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green.shade200,
         title: Text('Dobras Cutaneas'),
-        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            onPressed: () {
+              //LoginController().logout();
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.exit_to_app),
+          )
+        ],
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -136,53 +135,43 @@ class _AvaliacaoDobrasCutaneasViewState
                     child: Column(
                       children: [
                         SizedBox(height: 10),
-                        _buildTextFormField('Tríceps', _tricepsController),
-                        _buildTextFormField('Peitoral', _peitoralController),
-                        _buildTextFormField(
-                            'Axilar Média', _axilarMediaController),
-                        _buildTextFormField(
-                            'Subescapular', _subescapularController),
-                        _buildTextFormField(
-                            'Supra-ilíaca', _supraIliacaController),
-                        _buildTextFormField('Abdominal', _abdominalController),
-                        _buildTextFormField('Coxa', _coxaController),
-                        _buildTextFormField(
-                            'Panturrilha', _panturrilhaController),
-                        _buildTextFormField('Punho', _punhoController),
-                        _buildTextFormField('Fêmur', _femurController),
-                        _buildTextFormField('Úmero', _umeroController),
-                        _buildTextFormField('Tornozelo', _tornozeloController),
-                        // Add other text form fields here
+                        for (int i = 0; i < labels.length; i++)
+                          _buildTextFormField(labels[i], controllers[i]),
+                        //
                         SizedBox(height: 20),
                         ElevatedButton(
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              DobrasCutaneas dobrasCutaneas = DobrasCutaneas(
-                                triceps:
-                                    parseDoubleValue(_tricepsController.text),
-                                peitoral:
-                                    parseDoubleValue(_peitoralController.text),
-                                axilarMedia: parseDoubleValue(
-                                    _axilarMediaController.text),
-                                subescapular: parseDoubleValue(
-                                    _subescapularController.text),
-                                supraIliaca: parseDoubleValue(
-                                    _supraIliacaController.text),
+                              final dobrasCutaneas = DobrasCutaneas(
+                                avalicaoId: avaliacaoId!,
+                                triceps: parseDoubleValue(controllers[0].text),
+                                peitoral: parseDoubleValue(controllers[1].text),
+                                axilarMedia:
+                                    parseDoubleValue(controllers[2].text),
+                                subescapular:
+                                    parseDoubleValue(controllers[3].text),
+                                supraIliaca:
+                                    parseDoubleValue(controllers[4].text),
                                 abdominal:
-                                    parseDoubleValue(_abdominalController.text),
-                                coxa: parseDoubleValue(_coxaController.text),
-                                panturrilha: parseDoubleValue(
-                                    _panturrilhaController.text),
-                                punho: parseDoubleValue(_punhoController.text),
-                                femur: parseDoubleValue(_femurController.text),
-                                umero: parseDoubleValue(_umeroController.text),
+                                    parseDoubleValue(controllers[5].text),
+                                coxa: parseDoubleValue(controllers[6].text),
+                                panturrilha:
+                                    parseDoubleValue(controllers[7].text),
+                                punho: parseDoubleValue(controllers[8].text),
+                                femur: parseDoubleValue(controllers[9].text),
+                                umero: parseDoubleValue(controllers[10].text),
                                 tornozelo:
-                                    parseDoubleValue(_tornozeloController.text),
+                                    parseDoubleValue(controllers[11].text),
                               );
 
-                              avaliacao.dobrasCutaneas = dobrasCutaneas;
-                              AvaliacaoController().atualizarAvaliacao(
-                                  context, avaliacao, docId);
+                              isEditing
+                                  ? AvaliacaoDobrasController().atualizarDobras(
+                                      context,
+                                      dobrasCutaneas,
+                                      avaliacaoId!,
+                                      dobrasId!)
+                                  : AvaliacaoDobrasController().adicionarDobras(
+                                      context, dobrasCutaneas, avaliacaoId!);
 
                               // Salvar medidas no banco de dados ou realizar outra ação
                             }
@@ -206,7 +195,7 @@ class _AvaliacaoDobrasCutaneasViewState
           labelText: label,
           prefixIcon: Icon(Icons.fitness_center),
           prefixText: '   ', // Add space for the icon and suffix
-          suffixText: 'cm',
+          suffixText: 'mm',
           suffixStyle: TextStyle(
             color: Colors.grey, // Suffix color
             fontWeight: FontWeight.bold, // Font weight
@@ -218,7 +207,6 @@ class _AvaliacaoDobrasCutaneasViewState
             borderRadius: BorderRadius.circular(10),
           ),
         ),
-
         keyboardType: TextInputType.number,
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
@@ -229,18 +217,7 @@ class _AvaliacaoDobrasCutaneasViewState
 
   @override
   void dispose() {
-    _tricepsController.dispose();
-    _peitoralController.dispose();
-    _axilarMediaController.dispose();
-    _subescapularController.dispose();
-    _supraIliacaController.dispose();
-    _abdominalController.dispose();
-    _coxaController.dispose();
-    _panturrilhaController.dispose();
-    _punhoController.dispose();
-    _femurController.dispose();
-    _umeroController.dispose();
-    _tornozeloController.dispose();
+    controllers.forEach((controller) => controller.dispose());
     super.dispose();
   }
 
