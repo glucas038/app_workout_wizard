@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:workout_wizard/controller/exercicio_controller.dart';
 import 'package:workout_wizard/model/exercicio.dart';
 import '../controller/login_controller.dart';
@@ -32,7 +33,7 @@ class _ExerciciosViewState extends State<ExerciciosView> {
               //LoginController().logout();
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.exit_to_app),
+            icon: const Icon(Icons.keyboard_backspace_sharp),
           )
         ],
       ),
@@ -161,63 +162,125 @@ class _ExerciciosViewState extends State<ExerciciosView> {
         return AlertDialog(
           title: Text(
               (docId == null) ? "Adicionar Exercício" : "Editar Exercício"),
-          content: Expanded(
-            child: SizedBox(
-              child: Column(
-                children: [
-                  TextField(
-                    controller: txtNomeExercicio,
-                    decoration: const InputDecoration(
-                      labelText: 'Nome exercício',
-                      prefixIcon: Icon(Icons.description),
-                      border: OutlineInputBorder(),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: txtNomeExercicio,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome exercício',
+                    prefixIcon: Icon(
+                      FontAwesomeIcons.dumbbell,
+                      size: 18,
+                    ),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: txtGrupoMusc,
+                  decoration: const InputDecoration(
+                    labelText: 'Grupo Muscular',
+                    prefixIcon: Icon(
+                      FontAwesomeIcons.peopleGroup,
+                      size: 18,
+                    ),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: txtCarga,
+                  decoration: const InputDecoration(
+                    labelText: 'Carga',
+                    prefixIcon: Icon(
+                      FontAwesomeIcons.weightScale,
+                      size: 18,
+                    ),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: txtSeries,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Séries',
+                    prefixIcon: const Icon(
+                      FontAwesomeIcons.listOl,
+                      size: 18,
+                    ),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_drop_up, size: 18),
+                          onPressed: () {
+                            int currentValue =
+                                int.tryParse(txtSeries.text) ?? 0;
+                            txtSeries.text = (currentValue + 1).toString();
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_drop_down, size: 18),
+                          onPressed: () {
+                            int currentValue =
+                                int.tryParse(txtSeries.text) ?? 0;
+                            if (currentValue > 0) {
+                              txtSeries.text = (currentValue - 1).toString();
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: txtGrupoMusc,
-                    decoration: const InputDecoration(
-                      labelText: 'Grupo Muscular',
-                      prefixIcon: Icon(Icons.description),
-                      border: OutlineInputBorder(),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: txtRepeticoes,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Repetições',
+                    prefixIcon: const Icon(
+                      FontAwesomeIcons.rotate,
+                      size: 18,
+                    ),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_drop_up, size: 18),
+                          onPressed: () {
+                            int currentValue =
+                                int.tryParse(txtRepeticoes.text) ?? 0;
+                            txtRepeticoes.text = (currentValue + 1).toString();
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.arrow_drop_down, size: 18),
+                          onPressed: () {
+                            int currentValue =
+                                int.tryParse(txtRepeticoes.text) ?? 0;
+                            if (currentValue > 0) {
+                              txtRepeticoes.text =
+                                  (currentValue - 1).toString();
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: txtCarga,
-                    decoration: const InputDecoration(
-                      labelText: 'Carga',
-                      prefixIcon: Icon(Icons.description),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: txtSeries,
-                    decoration: const InputDecoration(
-                      labelText: 'Séries',
-                      prefixIcon: Icon(Icons.description),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: txtRepeticoes,
-                    decoration: const InputDecoration(
-                      labelText: 'Repetições',
-                      prefixIcon: Icon(Icons.description),
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
           actions: [
             TextButton(
-              child: const Text("fechar"),
+              child: const Text("Fechar"),
               onPressed: () {
                 txtNomeExercicio.clear();
                 txtGrupoMusc.clear();
@@ -228,7 +291,7 @@ class _ExerciciosViewState extends State<ExerciciosView> {
               },
             ),
             ElevatedButton(
-              child: const Text("salvar"),
+              child: const Text("Salvar"),
               onPressed: () {
                 var t = Exercicio(
                     LoginController().idUsuario(),

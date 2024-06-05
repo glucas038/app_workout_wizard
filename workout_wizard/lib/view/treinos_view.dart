@@ -30,7 +30,7 @@ class _TreinosViewState extends State<TreinosView> {
               LoginController().logout();
               Navigator.pop(context);
             },
-            icon: Icon(Icons.exit_to_app),
+            icon: Icon(Icons.keyboard_backspace_sharp),
           )
         ],
       ),
@@ -142,9 +142,7 @@ class _TreinosViewState extends State<TreinosView> {
         // retorna um objeto do tipo Dialog
         return AlertDialog(
           title: Text((docId == null) ? "Adicionar Treino" : "Editar Treino"),
-          content: SizedBox(
-            height: 250,
-            width: 300,
+          content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(

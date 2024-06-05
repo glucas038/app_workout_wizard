@@ -11,6 +11,7 @@ dependencies:
   device_preview: ^1.1.0
   firebase_auth: ^4.19.6
   firebase_core: ^2.31.1
+  font_awesome_flutter: ^10.1.0
   flutter:
     sdk: flutter
 
@@ -21,3 +22,6 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - images/ginasta-masculina-flexionando-os-bracos.png
+
