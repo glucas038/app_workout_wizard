@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Avaliacao {
-  String uId = '';
+  String uid = '';
   DateTime data = DateTime.now();
 
   double peso;
@@ -9,7 +9,7 @@ class Avaliacao {
   double imc = 0.0;
 
   Avaliacao({
-    required this.uId,
+    required this.uid,
     required this.peso,
     required this.altura,
     DateTime? data,
@@ -18,7 +18,7 @@ class Avaliacao {
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
-      'uId': uId,
+      'uid': uid,
       'data': data,
       'peso': peso,
       'altura': altura,
@@ -28,7 +28,7 @@ class Avaliacao {
 
   factory Avaliacao.fromJson(Map<String, dynamic> json) {
     return Avaliacao(
-      uId: json['uId'],
+      uid: json['uId'],
       peso: json['peso'],
       altura: json['altura'],
       data: (json['data'] as Timestamp).toDate(),

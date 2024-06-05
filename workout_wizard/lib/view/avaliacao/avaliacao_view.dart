@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'package:intl/intl.dart';
 import 'package:workout_wizard/controller/avaliacao_controller.dart';
 import 'package:workout_wizard/controller/login_controller.dart';
@@ -16,8 +15,6 @@ class AvaliacaoView extends StatefulWidget {
 class _AvaliacaoViewState extends State<AvaliacaoView> {
   var txtPeso = TextEditingController();
   var txtAltura = TextEditingController();
-  //var txtTitulo = TextEditingController();
-  //var txtDescricao = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +26,7 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
         actions: [
           IconButton(
             onPressed: () {
-              //LoginController().logout();
+              LoginController().logout();
               Navigator.pop(context);
             },
             icon: const Icon(Icons.exit_to_app),
@@ -39,8 +36,7 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: StreamBuilder<QuerySnapshot>(
-          stream:
-              FirebaseFirestore.instance.collection('avaliacao').snapshots(),
+          stream: AvaliacaoController().listarAvaliacao(),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               //sem conexão
@@ -57,62 +53,62 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
 
               //dados recuperados com sucesso
               default:
-                final dados = snapshot.requireData;
-                if (dados.size > 0) {
-                  final dados = snapshot.requireData;
-                  //exibir a lista de avaliações
-                  return ListView.builder(
-                    itemCount: dados.size,
-                    itemBuilder: (context, index) {
-                      String docId = dados.docs[index].id;
+                if (snapshot.hasError) {
+                  return Center(child: Text('Erro: ${snapshot.error}'));
+                }
 
-                      //DADOS armazenados no documento
-                      dynamic item = dados.docs[index].data();
-                      final DateTime date =
-                          (item['data'] as Timestamp).toDate();
-
-                      return Card(
-                        child: ListTile(
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(formatDate(date)),
-                                  Text(timeDifference(date)),
-                                ],
-                              ),
-                              Divider(), // Traço para dividir título do subtítulo
-                            ],
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('Peso: ${item['peso']} kg'),
-                                  Text('Altura: ${item['altura']} cm'),
-                                ],
-                              ),
-                            ],
-                          ),
-                          onTap: () {
-                            Navigator.pushNamed(context, 'avaliacao_exames',
-                                arguments: docId);
-                          },
-                        ),
-                      );
-                    },
-                  );
-                } else {
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return Center(
-                    child: Text("Nenhuma tarefa encontrada."),
+                    child: Text("Nenhuma avaliação encontrada."),
                   );
                 }
+
+                final dados = snapshot.data!;
+                //exibir a lista de avaliações
+                return ListView.builder(
+                  itemCount: dados.size,
+                  itemBuilder: (context, index) {
+                    String docId = dados.docs[index].id;
+
+                    //DADOS armazenados no documento
+                    dynamic item = dados.docs[index].data();
+                    final DateTime date = (item['data'] as Timestamp).toDate();
+
+                    return Card(
+                      child: ListTile(
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(formatDate(date)),
+                                Text(timeDifference(date)),
+                              ],
+                            ),
+                            Divider(), // Traço para dividir título do subtítulo
+                          ],
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Peso: ${item['peso']} kg'),
+                                Text('Altura: ${item['altura']} cm'),
+                              ],
+                            ),
+                          ],
+                        ),
+                        onTap: () {
+                          Navigator.pushNamed(context, 'avaliacao_exames',
+                              arguments: docId);
+                        },
+                      ),
+                    );
+                  },
+                );
             }
           },
         ),
@@ -149,19 +145,22 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
+                txtAltura.clear();
+                txtPeso.clear();
               },
               child: Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
                 var avaliacao = Avaliacao(
-                  uId: LoginController().idUsuario(),
+                  uid: LoginController().idUsuario()!,
                   peso: double.parse(txtPeso.text),
                   altura: double.parse(txtAltura.text),
+                  data: DateTime.now(), // Adicionando data atual
                 );
-                //avaliacao.data = DateTime.now();
                 AvaliacaoController().adicionarAvaliacao(context, avaliacao);
-                
+                txtAltura.clear();
+                txtPeso.clear();
               },
               child: Text('Salvar'),
             ),
@@ -171,7 +170,7 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
     );
   }
 
-// Função para formatar a data
+  // Função para formatar a data
   String formatDate(DateTime date) {
     final DateFormat formatter = DateFormat('d MMMM, y', 'pt_BR');
     return formatter.format(date);

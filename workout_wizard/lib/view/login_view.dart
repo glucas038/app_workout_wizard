@@ -131,7 +131,7 @@ class _LoginViewState extends State<LoginView> {
                 Text('Ainda não tem conta?'),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, 'cadastrar');
+                    Navigator.pushNamed(context, 'cadastro');
                   },
                   child: Text('Cadastre-se'),
                 ),

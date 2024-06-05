@@ -6,28 +6,38 @@ import 'package:workout_wizard/view/util.dart';
 
 class AvaliacaoController {
   void adicionarAvaliacao(context, Avaliacao avaliacao) {
-    String docId = '';
-    FirebaseFirestore.instance
-        .collection('avaliacao')
-        .add(avaliacao.toJson())
-        .then((resultado) {
-          sucesso(context, 'Avaliação adicionada com sucesso!');
-          docId = resultado.id;
-        })
-        .catchError((erro) => erro(context, 'Erro ao adicionar avaliação!'))
-        .whenComplete(() {
-          Navigator.pop(context);
-          Navigator.pushNamed(context, 'avaliacao_exames', arguments: docId);
-        });
+    String uid = LoginController().idUsuario();
+    if (uid != null) {
+      avaliacao.uid = uid; // Adiciona o UID do usuário à avaliação
+      FirebaseFirestore.instance
+          .collection('avaliacao')
+          .add(avaliacao.toJson())
+          .then((resultado) {
+            sucesso(context, 'Avaliação adicionada com sucesso!');
+            Navigator.pop(context);
+            Navigator.pushNamed(context, 'avaliacao_exames', arguments: resultado.id);
+          })
+          .catchError((erro) {
+            erro(context, 'Erro ao adicionar avaliação!');
+          });
+    } else {
+      erro(context, 'Usuário não está logado.');
+    }
   }
 
-  listarAvaliacao(String docId) {
-    return FirebaseFirestore.instance
-        .collection('avaliacao')
-        .where('uid', isEqualTo: LoginController().idUsuario());
+  Stream<QuerySnapshot> listarAvaliacao() {
+    String uid = LoginController().idUsuario();
+    if (uid != null) {
+      return FirebaseFirestore.instance
+          .collection('avaliacao')
+          .where('uid', isEqualTo: uid)
+          .snapshots();
+    } else {
+      throw Exception('Usuário não está logado.');
+    }
   }
 
-  pegarAvaliacao(String docId) {
+  DocumentReference pegarAvaliacao(String docId) {
     return FirebaseFirestore.instance.collection('avaliacao').doc(docId);
   }
 
@@ -36,9 +46,13 @@ class AvaliacaoController {
         .collection('avaliacao')
         .doc(docId)
         .update(avaliacao.toJson())
-        .then((resultado) =>
-            sucesso(context, 'Avaliação atualizada com sucesso!'))
-        .catchError((erro) => erro(context, 'Erro ao atualizar avaliação!'))
-        .whenComplete(() => Navigator.pop(context));
+        .then((_) {
+          sucesso(context, 'Avaliação atualizada com sucesso!');
+          Navigator.pop(context);
+        })
+        .catchError((erro) {
+          erro(context, 'Erro ao atualizar avaliação!');
+        });
   }
 }
+

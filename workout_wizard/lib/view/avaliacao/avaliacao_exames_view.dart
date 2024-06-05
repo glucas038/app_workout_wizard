@@ -26,7 +26,9 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
     super.initState();
     // Recupera o docId quando o widget é inicializado
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      docId = ModalRoute.of(context)!.settings.arguments as dynamic;
+      setState(() {
+        docId = ModalRoute.of(context)!.settings.arguments as String;
+      });
       fetchAvaliacaoData();
     });
   }
