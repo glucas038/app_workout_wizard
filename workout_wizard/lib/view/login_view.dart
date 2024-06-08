@@ -156,7 +156,7 @@ class _LoginViewState extends State<LoginView> {
                                       child: Column(
                                         children: [
                                           Text(
-                                            "Identifique-se para receber um e-mail com as instruções e o link para criar uma nova senha.",
+                                            "Confirme o seu email para receber um link de redefinição de senha no inbox",
                                           ),
                                           SizedBox(height: 25),
                                           TextField(

@@ -16,39 +16,23 @@ class TreinosView extends StatefulWidget {
 }
 
 class _TreinosViewState extends State<TreinosView> {
+  final formKey = GlobalKey<FormState>();
   var txtTreino = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(255, 220, 235, 238),
       appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 220, 235, 238),
         title: Text('Treinos'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            onPressed: () {
-              LoginController().logout();
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.keyboard_backspace_sharp),
-          )
-        ],
       ),
-
-      // BODY
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        //
-        // LISTAR as tarefas
-        //
         child: StreamBuilder<QuerySnapshot>(
-          //fluxo de dados
           stream: TreinoController().listar().snapshots(),
-          //exibição dos dados
           builder: (context, snapshot) {
-            //verificar a conectividade
             switch (snapshot.connectionState) {
-              //sem conexão
               case ConnectionState.none:
                 return Center(
                   child: Text("Falha na conexão."),
@@ -60,26 +44,25 @@ class _TreinosViewState extends State<TreinosView> {
                   child: CircularProgressIndicator(),
                 );
 
-              //dados recuperados com sucesso
               default:
                 final dados = snapshot.requireData;
                 if (dados.size > 0) {
-                  //exibir a lista de tarefas
                   return ListView.builder(
                     itemCount: dados.size,
                     itemBuilder: (context, index) {
-                      //ID do documento
                       String id = dados.docs[index].id;
 
-                      //DADOS armazenados no documento
                       dynamic item = dados.docs[index].data();
 
                       return Card(
+                        margin: EdgeInsets.symmetric(vertical: 10),
                         child: ListTile(
-                          title: Text(item['ds_treino']),
-                          //
-                          // Atualizar e Excluir Tarefas
-                          //
+                          contentPadding: EdgeInsets.all(25),
+                          title: Text(
+                            item['ds_treino'],
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                           trailing: SizedBox(
                             width: 80,
                             child: Row(
@@ -89,13 +72,38 @@ class _TreinosViewState extends State<TreinosView> {
                                     txtTreino.text = item['ds_treino'];
                                     salvarTreino(context, docId: id);
                                   },
-                                  icon: Icon(Icons.edit_rounded),
+                                  icon: Icon(Icons.edit_note_sharp),
                                 ),
                                 IconButton(
                                   onPressed: () {
-                                    TreinoController().excluir(context, id);
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: Text("Confirmação"),
+                                          content: Text(
+                                              "Tem certeza que deseja excluir o item '${item['ds_treino']}'?"),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text("Cancelar"),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                                TreinoController()
+                                                    .excluir(context, id);
+                                              },
+                                              child: Text("Confirmar"),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
                                   },
-                                  icon: Icon(Icons.delete_rounded),
+                                  icon: Icon(Icons.delete_outlined),
                                 ),
                               ],
                             ),
@@ -122,7 +130,6 @@ class _TreinosViewState extends State<TreinosView> {
           },
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           salvarTreino(context);
@@ -132,9 +139,6 @@ class _TreinosViewState extends State<TreinosView> {
     );
   }
 
-  //
-  // ADICIONAR TAREFA
-  //
   void salvarTreino(context, {docId}) {
     showDialog(
       context: context,
@@ -142,19 +146,28 @@ class _TreinosViewState extends State<TreinosView> {
         // retorna um objeto do tipo Dialog
         return AlertDialog(
           title: Text((docId == null) ? "Adicionar Treino" : "Editar Treino"),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: txtTreino,
-                  decoration: InputDecoration(
-                    labelText: 'Desc. Treino',
-                    prefixIcon: Icon(Icons.description),
-                    border: OutlineInputBorder(),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: txtTreino,
+                    decoration: InputDecoration(
+                      labelText: 'Desc. Treino',
+                      prefixIcon: Icon(Icons.description),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Informe a descrição do treino';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-                SizedBox(height: 15),
-              ],
+                  SizedBox(height: 15),
+                ],
+              ),
             ),
           ),
           actionsPadding: EdgeInsets.fromLTRB(20, 0, 20, 10),
@@ -169,19 +182,20 @@ class _TreinosViewState extends State<TreinosView> {
             ElevatedButton(
               child: Text("salvar"),
               onPressed: () {
-                //criação do objeto
-                var t = Treino(
-                  LoginController().idUsuario(),
-                  txtTreino.text,
-                );
+                if (formKey.currentState!.validate()) {
+                  var t = Treino(
+                    LoginController().idUsuario(),
+                    txtTreino.text,
+                  );
 
-                if (docId == null) {
-                  TreinoController().adicionar(context, t);
-                } else {
-                  TreinoController().atualizar(context, docId, t);
+                  if (docId == null) {
+                    TreinoController().adicionar(context, t);
+                  } else {
+                    TreinoController().atualizar(context, docId, t);
+                  }
+
+                  txtTreino.clear();
                 }
-
-                txtTreino.clear();
               },
             ),
           ],
