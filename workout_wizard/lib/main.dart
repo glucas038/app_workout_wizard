@@ -8,6 +8,8 @@ import 'package:workout_wizard/view/avaliacao/avaliacao_medidas_corporais_view.d
 import 'package:workout_wizard/view/avaliacao/avaliacao_view.dart';
 import 'package:workout_wizard/view/cadastro_view.dart';
 import 'package:workout_wizard/view/login_view.dart';
+import 'package:workout_wizard/view/principal_view.dart';
+import 'package:workout_wizard/view/sobre_view.dart';
 import 'package:workout_wizard/view/treinos_view.dart';
 
 Future<void> main() async {
@@ -33,7 +35,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Avaliações de Treinos',
+      title: 'Workout Wizard',
       initialRoute: 'login',
       routes: {
         'avaliacao': (context) => AvaliacaoView(),
@@ -42,7 +44,10 @@ class MainApp extends StatelessWidget {
         'avaliacao_medidas': (context) => AvaliacaoMedidasCorporaisView(),
         'login': (context) => LoginView(),
         'treinos': (context) => TreinosView(),
+        'principal': (context) => PrincipalView(),
+        'sobre': (context) => Sobre(),
         'cadastro': (context) => CadastroView(),
+
       },
     );
   }
