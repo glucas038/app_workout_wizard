@@ -6,15 +6,15 @@ class Avaliacao {
 
   double peso;
   double altura;
-  double imc = 0.0;
+  double? imc;
 
   Avaliacao({
     required this.uid,
     required this.peso,
     required this.altura,
     DateTime? data,
-  })  : data = data ?? DateTime.now(),
-        imc = (peso / (altura * altura)) * 10000;
+    required this.imc,
+  }) : data = data ?? DateTime.now();
 
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
@@ -28,9 +28,10 @@ class Avaliacao {
 
   factory Avaliacao.fromJson(Map<String, dynamic> json) {
     return Avaliacao(
-      uid: json['uId'],
-      peso: json['peso'],
-      altura: json['altura'],
+      uid: json['uid'],
+      peso: (json['peso'] as num?)?.toDouble() ?? 0.0,
+      altura: (json['altura'] as num?)?.toDouble() ?? 0.0,
+      imc: (json['imc'] as num?)?.toDouble() ?? 0.0,
       data: (json['data'] as Timestamp).toDate(),
     );
   }

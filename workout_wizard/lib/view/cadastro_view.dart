@@ -21,6 +21,8 @@ class _CadastroViewState extends State<CadastroView> {
 
   //Controladores dos campos de texto
   var txtPrimeiroNome = TextEditingController();
+  var txtSexo = TextEditingController();
+  var txtIdade = TextEditingController();
   var txtEmail = TextEditingController();
   var txtSenha = TextEditingController();
   var txtCpf = TextEditingController();
@@ -129,6 +131,36 @@ class _CadastroViewState extends State<CadastroView> {
                     }
                     if (!EmailValidator.validate(value)) {
                       return 'Informe um e-mail válido.';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 30),
+                TextFormField(
+                  controller: txtSexo,
+                  style: TextStyle(fontSize: 26),
+                  decoration: InputDecoration(
+                    labelText: 'Sexo',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Informe um sexo.';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 30),
+                TextFormField(
+                  controller: txtIdade,
+                  style: TextStyle(fontSize: 26),
+                  decoration: InputDecoration(
+                    labelText: 'Idade',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Informe sua idade.';
                     }
                     return null;
                   },
@@ -284,7 +316,7 @@ class _CadastroViewState extends State<CadastroView> {
                     if (formKey.currentState!.validate()) {
                       Usuario usuario = Usuario(
                         txtPrimeiroNome.text,
-                        txtEmail.text,
+                        txtCpf.text,
                         Endereco(
                           txtLogradouro.text,
                           txtCidade.text,
@@ -292,6 +324,8 @@ class _CadastroViewState extends State<CadastroView> {
                           txtCep.text,
                           txtNumero.text,
                         ),
+                        txtSexo.text,
+                        double.parse(txtIdade.text),
                       );
                       LoginController().criarConta(
                           context, txtEmail.text, txtSenha.text, usuario);

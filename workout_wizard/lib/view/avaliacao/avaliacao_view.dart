@@ -102,6 +102,7 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
                           ],
                         ),
                         onTap: () {
+                          print(docId);
                           Navigator.pushNamed(context, 'avaliacao_exames',
                               arguments: docId);
                         },
@@ -152,11 +153,16 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
             ),
             TextButton(
               onPressed: () {
+                double peso = double.parse(txtPeso.text);
+                double altura = double.parse(txtAltura.text);
+
                 var avaliacao = Avaliacao(
                   uid: LoginController().idUsuario()!,
-                  peso: double.parse(txtPeso.text),
-                  altura: double.parse(txtAltura.text),
-                  data: DateTime.now(), // Adicionando data atual
+                  peso: peso,
+                  altura: altura,
+                  data: DateTime.now(),
+                  imc: (peso / (altura * altura)) *
+                      10000, // Adicionando data atual
                 );
                 AvaliacaoController().adicionarAvaliacao(context, avaliacao);
                 txtAltura.clear();

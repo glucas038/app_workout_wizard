@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:workout_wizard/controller/avaliacao_controller.dart';
 import 'package:workout_wizard/controller/avaliacao_dobras_controller.dart';
+import 'package:workout_wizard/controller/avaliacao_resultado.dart';
+import 'package:workout_wizard/controller/login_controller.dart';
+import 'package:workout_wizard/model/avaliacao.dart';
 import 'package:workout_wizard/model/dobras_cutaneas.dart';
+import 'package:workout_wizard/model/resultado.dart';
 
 class AvaliacaoDobrasCutaneasView extends StatefulWidget {
   const AvaliacaoDobrasCutaneasView({super.key});
@@ -23,7 +28,6 @@ class _AvaliacaoDobrasCutaneasViewState
     'Supra-ilíaca',
     'Abdominal',
     'Coxa',
-    'Panturrilha',
   ];
 
   final List<TextEditingController> controllers =
@@ -34,6 +38,7 @@ class _AvaliacaoDobrasCutaneasViewState
   String? avaliacaoId;
   bool isEditing = false;
   String? dobrasId;
+  String? resultadoId;
 
   @override
   void initState() {
@@ -46,19 +51,22 @@ class _AvaliacaoDobrasCutaneasViewState
 
   void fetchDobrasCutaneas() async {
     try {
-      print(avaliacaoId);
       if (avaliacaoId != null) {
         final dobrasSnapshot =
             await AvaliacaoDobrasController.listarDobras(avaliacaoId!);
-        print(dobrasSnapshot.runtimeType);
+        final resultadoSnapshot = await AvaliacaoResultadoController()
+            .getResultadoStream(avaliacaoId!)
+            .first;
+        resultadoId = resultadoSnapshot.docs.first.id;
+        print('Resultado ID: $resultadoId');
 
         if (dobrasSnapshot.docs.isNotEmpty) {
           isEditing = true;
           dobrasId = dobrasSnapshot.docs.first.id;
-          
+
           final dobrasData =
               dobrasSnapshot.docs.first.data() as Map<String, dynamic>;
-          
+
           if (dobrasData != null) {
             final dobrasCutaneas = DobrasCutaneas.fromJson(dobrasData);
             setState(() {
@@ -101,8 +109,6 @@ class _AvaliacaoDobrasCutaneasViewState
         return dobrasCutaneas.abdominal.toString();
       case 'Coxa':
         return dobrasCutaneas.coxa.toString();
-      case 'Panturrilha':
-        return dobrasCutaneas.panturrilha.toString();
       default:
         return '';
     }
@@ -140,9 +146,10 @@ class _AvaliacaoDobrasCutaneasViewState
                         //
                         SizedBox(height: 20),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formKey.currentState!.validate()) {
                               final dobrasCutaneas = DobrasCutaneas(
+                                protocolo: 'Pollock 7',
                                 avalicaoId: avaliacaoId!,
                                 triceps: parseDoubleValue(controllers[0].text),
                                 peitoral: parseDoubleValue(controllers[1].text),
@@ -155,14 +162,48 @@ class _AvaliacaoDobrasCutaneasViewState
                                 abdominal:
                                     parseDoubleValue(controllers[5].text),
                                 coxa: parseDoubleValue(controllers[6].text),
-                                panturrilha:
-                                    parseDoubleValue(controllers[7].text),
-                                punho: parseDoubleValue(controllers[8].text),
-                                femur: parseDoubleValue(controllers[9].text),
-                                umero: parseDoubleValue(controllers[10].text),
-                                tornozelo:
-                                    parseDoubleValue(controllers[11].text),
                               );
+
+                              // Verifica se as 7 medidas estão presentes
+                              bool hasAll7Measures = [
+                                controllers[0].text,
+                                controllers[1].text,
+                                controllers[2].text,
+                                controllers[3].text,
+                                controllers[4].text,
+                                controllers[5].text,
+                                controllers[6].text
+                              ].every((text) => text.isNotEmpty);
+
+                              final resultado = Resultado.isEmpty();
+
+                              if (hasAll7Measures) {
+                                try {
+                                  print('Salvando');
+
+                                  print('avalicaoId: $avaliacaoId');
+                                  final usuario =
+                                      await LoginController().pegarUsuario();
+                                  print(usuario);
+
+                                  final avaliacao = await AvaliacaoController()
+                                      .getAvaliacao(avaliacaoId!);
+                                  print(avaliacao);
+
+                                  resultado.pollock7(
+                                      dobrasCutaneas, usuario, avaliacao);
+
+                                  resultado.pollock7(
+                                      dobrasCutaneas, usuario, avaliacao);
+                                  print(resultado);
+
+                                  AvaliacaoResultadoController()
+                                      .atualizarResultado(context, resultado,
+                                          avaliacaoId!, resultadoId!);
+                                } catch (e) {
+                                  print('Ocorreu um erro: $e');
+                                }
+                              }
 
                               isEditing
                                   ? AvaliacaoDobrasController().atualizarDobras(
@@ -172,8 +213,6 @@ class _AvaliacaoDobrasCutaneasViewState
                                       dobrasId!)
                                   : AvaliacaoDobrasController().adicionarDobras(
                                       context, dobrasCutaneas, avaliacaoId!);
-
-                              // Salvar medidas no banco de dados ou realizar outra ação
                             }
                           },
                           child: Text('Salvar'),

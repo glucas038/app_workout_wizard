@@ -55,4 +55,5 @@ class AvaliacaoMedidasController {
         .catchError(
             (e) => erro(context, 'Não foi possível excluir as medidas corporais'));
   }
+  
 }

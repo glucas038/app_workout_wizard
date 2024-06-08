@@ -59,14 +59,31 @@ class LoginController {
     });
   }
 
+  Future<Usuario> pegarUsuario() {
+    String uid = FirebaseAuth.instance.currentUser!.uid;
+    return FirebaseFirestore.instance
+        .collection('usuario')
+        .doc(uid)
+        .get()
+        .then((onValue) {
+      if (onValue.exists) {
+        return Usuario.fromJson(onValue.data() as Map<String, dynamic>);
+      } else {
+        throw Exception('Usuário não encontrado no Firestore.');
+      }
+    });
+  }
+
   //
   // ESQUECEU A SENHA
   //
   esqueceuSenha(context, String email) {
     if (email.isNotEmpty) {
-      FirebaseAuth.instance.sendPasswordResetEmail(
+      FirebaseAuth.instance
+          .sendPasswordResetEmail(
         email: email,
-      ).then((_) {
+      )
+          .then((_) {
         sucesso(context, 'Email enviado com sucesso!');
       }).catchError((_) {
         erro(context, 'Não foi possível enviar o e-mail');

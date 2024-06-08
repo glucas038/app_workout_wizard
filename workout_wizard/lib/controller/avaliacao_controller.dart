@@ -13,13 +13,13 @@ class AvaliacaoController {
           .collection('avaliacao')
           .add(avaliacao.toJson())
           .then((resultado) {
-            sucesso(context, 'Avaliação adicionada com sucesso!');
-            Navigator.pop(context);
-            Navigator.pushNamed(context, 'avaliacao_exames', arguments: resultado.id);
-          })
-          .catchError((erro) {
-            erro(context, 'Erro ao adicionar avaliação!');
-          });
+        sucesso(context, 'Avaliação adicionada com sucesso!');
+        Navigator.pop(context);
+        Navigator.pushNamed(context, 'avaliacao_exames',
+            arguments: resultado.id);
+      }).catchError((erro) {
+        erro(context, 'Erro ao adicionar avaliação!');
+      });
     } else {
       erro(context, 'Usuário não está logado.');
     }
@@ -41,18 +41,31 @@ class AvaliacaoController {
     return FirebaseFirestore.instance.collection('avaliacao').doc(docId);
   }
 
+  Future<Avaliacao> getAvaliacao(String avaliacaoId) {
+    print(avaliacaoId);
+    return FirebaseFirestore.instance
+        .collection('avaliacao')
+        .doc(avaliacaoId)
+        .get()
+        .then((onValue) {
+      if (onValue.exists) {
+        return Avaliacao.fromJson(onValue.data() as Map<String, dynamic>);
+      } else {
+        throw Exception('Avaliacao não encontrado no Firestore.');
+      }
+    });
+  }
+
   void atualizarAvaliacao(context, Avaliacao avaliacao, String docId) {
     FirebaseFirestore.instance
         .collection('avaliacao')
         .doc(docId)
         .update(avaliacao.toJson())
         .then((_) {
-          sucesso(context, 'Avaliação atualizada com sucesso!');
-          Navigator.pop(context);
-        })
-        .catchError((erro) {
-          erro(context, 'Erro ao atualizar avaliação!');
-        });
+      sucesso(context, 'Avaliação atualizada com sucesso!');
+      Navigator.pop(context);
+    }).catchError((erro) {
+      erro(context, 'Erro ao atualizar avaliação!');
+    });
   }
 }
-

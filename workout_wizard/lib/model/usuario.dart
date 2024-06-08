@@ -3,14 +3,18 @@ import 'package:workout_wizard/model/endereco.dart';
 class Usuario {
   String? id;
   String nome;
+  String sexo;
+  double idade;
   String cpf;
   Endereco endereco;
 
-  Usuario(this.nome, this.cpf, this.endereco, {this.id});
+  Usuario(this.nome, this.cpf, this.endereco, this.sexo, this.idade, {this.id});
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id, // 'id' é opcional, pois o Firebase gera automaticamente um 'id' para cada documento
+      'id': id,
+      'sexo': sexo,
+      'idade': idade,
       'nome': nome,
       'cpf': cpf,
       'endereco': endereco.toJson(),
@@ -22,7 +26,9 @@ class Usuario {
       json['nome'],
       json['cpf'],
       Endereco.fromJson(json['endereco']),
-      id: json['id'], // Adicionei o id aqui para garantir que ele seja atribuído
+      json['sexo'],
+      (json['idade'] as num?)?.toDouble() ?? 0.0,
+      id: json['id'],
     );
   }
 }
