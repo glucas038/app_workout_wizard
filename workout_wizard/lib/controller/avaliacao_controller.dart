@@ -1,25 +1,59 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:workout_wizard/controller/login_controller.dart';
 import 'package:workout_wizard/model/avaliacao.dart';
 import 'package:workout_wizard/view/util.dart';
 
 class AvaliacaoController {
   void adicionarAvaliacao(context, Avaliacao avaliacao) {
-    FirebaseFirestore.instance
-        .collection('avaliacao')
-        .add(avaliacao.toJson())
-        .then((resultado) =>
-            sucesso(context, 'Avaliação adicionada com sucesso!'))
-        .catchError((erro) => erro(context, 'Erro ao adicionar avaliação!'))
-        .whenComplete(() => Navigator.pop(context));
+    String uid = LoginController().idUsuario();
+    if (uid != null) {
+      avaliacao.uid = uid; // Adiciona o UID do usuário à avaliação
+      FirebaseFirestore.instance
+          .collection('avaliacao')
+          .add(avaliacao.toJson())
+          .then((resultado) {
+        sucesso(context, 'Avaliação adicionada com sucesso!');
+        Navigator.pop(context);
+        Navigator.pushNamed(context, 'avaliacao_exames',
+            arguments: resultado.id);
+      }).catchError((erro) {
+        erro(context, 'Erro ao adicionar avaliação!');
+      });
+    } else {
+      erro(context, 'Usuário não está logado.');
+    }
   }
 
-  listar() {
-    return FirebaseFirestore.instance.collection('avaliacao');
+  Stream<QuerySnapshot> listarAvaliacao() {
+    String uid = LoginController().idUsuario();
+    if (uid != null) {
+      return FirebaseFirestore.instance
+          .collection('avaliacao')
+          .where('uid', isEqualTo: uid)
+          .snapshots();
+    } else {
+      throw Exception('Usuário não está logado.');
+    }
   }
 
-  listarAvaliacao(String docId) {
+  DocumentReference pegarAvaliacao(String docId) {
     return FirebaseFirestore.instance.collection('avaliacao').doc(docId);
+  }
+
+  Future<Avaliacao> getAvaliacao(String avaliacaoId) {
+    print(avaliacaoId);
+    return FirebaseFirestore.instance
+        .collection('avaliacao')
+        .doc(avaliacaoId)
+        .get()
+        .then((onValue) {
+      if (onValue.exists) {
+        return Avaliacao.fromJson(onValue.data() as Map<String, dynamic>);
+      } else {
+        throw Exception('Avaliacao não encontrado no Firestore.');
+      }
+    });
   }
 
   void atualizarAvaliacao(context, Avaliacao avaliacao, String docId) {
@@ -27,9 +61,11 @@ class AvaliacaoController {
         .collection('avaliacao')
         .doc(docId)
         .update(avaliacao.toJson())
-        .then((resultado) =>
-            sucesso(context, 'Avaliação atualizada com sucesso!'))
-        .catchError((erro) => erro(context, 'Erro ao atualizar avaliação!'))
-        .whenComplete(() => Navigator.pop(context));
+        .then((_) {
+      sucesso(context, 'Avaliação atualizada com sucesso!');
+      Navigator.pop(context);
+    }).catchError((erro) {
+      erro(context, 'Erro ao atualizar avaliação!');
+    });
   }
 }

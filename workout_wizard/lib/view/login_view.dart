@@ -12,6 +12,7 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
+
   final formKey = GlobalKey<FormState>();
 
   var txtEmail = TextEditingController();

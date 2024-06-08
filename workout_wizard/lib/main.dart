@@ -6,6 +6,7 @@ import 'package:workout_wizard/view/avaliacao/avaliacao_dobras_cutaneas_view.dar
 import 'package:workout_wizard/view/avaliacao/avaliacao_exames_view.dart';
 import 'package:workout_wizard/view/avaliacao/avaliacao_medidas_corporais_view.dart';
 import 'package:workout_wizard/view/avaliacao/avaliacao_view.dart';
+import 'package:workout_wizard/view/cadastro_view.dart';
 import 'package:workout_wizard/view/login_view.dart';
 import 'package:workout_wizard/view/principal_view.dart';
 import 'package:workout_wizard/view/sobre_view.dart';
@@ -45,6 +46,8 @@ class MainApp extends StatelessWidget {
         'treinos': (context) => TreinosView(),
         'principal': (context) => PrincipalView(),
         'sobre': (context) => Sobre(),
+        'cadastro': (context) => CadastroView(),
+
       },
     );
   }
