@@ -12,12 +12,16 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
+  String email = 'lucas@gmail.com';
+  String senha = '123456';
   var txtEmail = TextEditingController();
   var txtSenha = TextEditingController();
   var txtEmailEsqueceuSenha = TextEditingController();
 
   @override
   void initState() {
+    txtEmail.text = email;
+    txtSenha.text = senha;
     super.initState();
   }
 
@@ -127,7 +131,7 @@ class _LoginViewState extends State<LoginView> {
                 Text('Ainda não tem conta?'),
                 TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, 'cadastrar');
+                    Navigator.pushNamed(context, 'cadastro');
                   },
                   child: Text('Cadastre-se'),
                 ),
