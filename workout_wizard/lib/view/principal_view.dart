@@ -22,7 +22,7 @@ class PrincipalView extends StatelessWidget {
               LoginController().logout();
               Navigator.pop(context);
             },
-            icon: const Icon(Icons.keyboard_backspace_sharp),
+            icon: const Icon(Icons.exit_to_app),
           )
         ],
       ),

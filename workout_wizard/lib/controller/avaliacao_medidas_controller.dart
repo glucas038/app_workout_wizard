@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:workout_wizard/controller/login_controller.dart';
 import 'package:workout_wizard/model/medidas_corporais.dart';
 import 'package:workout_wizard/view/util.dart';
 

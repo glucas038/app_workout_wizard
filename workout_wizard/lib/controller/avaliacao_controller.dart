@@ -47,7 +47,8 @@ class AvaliacaoController {
     });
   }
 
-  void atualizarAvaliacao(BuildContext context, Avaliacao avaliacao, String docId) {
+  void atualizarAvaliacao(
+      BuildContext context, Avaliacao avaliacao, String docId) {
     FirebaseFirestore.instance
         .collection('avaliacao')
         .doc(docId)
@@ -60,15 +61,33 @@ class AvaliacaoController {
     });
   }
 
-  void excluirAvaliacao(BuildContext context, String id) {
-    FirebaseFirestore.instance
-        .collection('avaliacao')
-        .doc(id)
-        .delete()
-        .then((_) {
-      sucesso(context, 'Avaliação excluída com sucesso!');
-    }).catchError((erro) {
-      erro(context, 'Erro ao excluir avaliação!');
-    });
+  void excluirAvaliacao(context, String id) async {
+    try {
+      // Obtém referência ao documento da avaliação
+      DocumentReference avaliacaoRef =
+          FirebaseFirestore.instance.collection('avaliacao').doc(id);
+
+      // Função auxiliar para deletar uma subcoleção
+      Future<void> _deleteSubcollection(
+          DocumentReference parentRef, String subcollectionName) async {
+        QuerySnapshot subcollectionSnapshot =
+            await parentRef.collection(subcollectionName).get();
+        for (DocumentSnapshot doc in subcollectionSnapshot.docs) {
+          await doc.reference.delete();
+        }
+      }
+
+      // Deleta documentos das subcoleções
+      await _deleteSubcollection(avaliacaoRef, 'resultado');
+      await _deleteSubcollection(avaliacaoRef, 'dobras_cutaneas');
+      await _deleteSubcollection(avaliacaoRef, 'medidas_corporais');
+
+      // Deleta o documento da avaliação
+      await avaliacaoRef.delete();
+
+      sucesso(context, 'Avaliação excluída com sucesso');
+    } catch (e) {
+      erro(context, 'Não foi possível excluir a avaliação');
+    }
   }
 }

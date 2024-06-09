@@ -1,7 +1,6 @@
 import 'package:workout_wizard/model/avaliacao.dart';
 import 'package:workout_wizard/model/dobras_cutaneas.dart';
 import 'package:workout_wizard/model/usuario.dart';
-import 'package:intl/intl.dart';
 
 class Resultado {
   String avaliacaoId;
@@ -72,12 +71,12 @@ class Resultado {
     int idade = calcularIdade(usuario.dataNascimento);
 
     double DC;
-    if (usuario.sexo == "M") {
+    if (usuario.sexo == "Masculino") {
       DC = 1.112 -
           (0.00043499 * somaDobras) +
           (0.00000055 * somaDobras * somaDobras) -
           (0.00028826 * idade);
-    } else if (usuario.sexo == "F") {
+    } else if (usuario.sexo == "Feminino") {
       DC = 1.097 -
           (0.00046971 * somaDobras) +
           (0.00000056 * somaDobras * somaDobras) -

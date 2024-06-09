@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:workout_wizard/controller/avaliacao_controller.dart';
 import 'package:workout_wizard/controller/login_controller.dart';
@@ -46,6 +47,8 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
               var itemB = b.data() as Map<String, dynamic>;
               return itemA['data'].compareTo(itemB['data']);
             });
+
+            filteredDocs = filteredDocs.reversed.toList();
 
             return ListView.builder(
               itemCount: filteredDocs.length,
@@ -121,13 +124,35 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
             children: [
               TextField(
                 controller: txtPeso,
-                decoration: const InputDecoration(labelText: 'Peso'),
+                decoration: const InputDecoration(
+                  labelText: 'Peso',
+                  suffixText: 'kg',
+                  suffixStyle: const TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'\d')),
+                ],
               ),
               TextField(
                 controller: txtAltura,
-                decoration: const InputDecoration(labelText: 'Altura'),
+                decoration: const InputDecoration(
+                  labelText: 'Altura',
+                  suffixText: 'cm',
+                  suffixStyle: const TextStyle(
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'\d')),
+                ],
               ),
             ],
           ),

@@ -133,7 +133,7 @@ class _CadastroViewState extends State<CadastroView> {
                 _buildDropdownField(
                   controller: txtSexo,
                   labelText: 'Sexo',
-                  items: ['M', 'F'],
+                  items: ['Masculino', 'Feminino'],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe um sexo.';
