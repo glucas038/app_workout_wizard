@@ -7,22 +7,40 @@ class AvaliacaoMedidasCorporaisView extends StatefulWidget {
   const AvaliacaoMedidasCorporaisView({Key? key}) : super(key: key);
 
   @override
-  _AvaliacaoMedidasCorporaisViewState createState() => _AvaliacaoMedidasCorporaisViewState();
+  _AvaliacaoMedidasCorporaisViewState createState() =>
+      _AvaliacaoMedidasCorporaisViewState();
 }
 
-class _AvaliacaoMedidasCorporaisViewState extends State<AvaliacaoMedidasCorporaisView> {
+class _AvaliacaoMedidasCorporaisViewState
+    extends State<AvaliacaoMedidasCorporaisView> {
   final _formKey = GlobalKey<FormState>();
 
   final List<String> labels = [
-    'Pescoço', 'Ombro', 'Toráx Inspirado', 'Toráx Expirado', 'Peitoral', 'Cintura Escapular',
-    'Cintura', 'Abdomen', 'Quadril', 'Coxa Direita Relaxada', 'Coxa Direita Contraída',
-    'Coxa Esquerda Relaxada', 'Coxa Esquerda Contraída', 'Panturrilha Direita',
-    'Panturrilha Esquerda', 'Braço Relaxado Direito', 'Braço Contraído Direito',
-    'Braço Relaxado Esquerdo', 'Braço Contraído Esquerdo', 'Antebraço Direito',
+    'Pescoço',
+    'Ombro',
+    'Toráx Inspirado',
+    'Toráx Expirado',
+    'Peitoral',
+    'Cintura Escapular',
+    'Cintura',
+    'Abdomen',
+    'Quadril',
+    'Coxa Direita Relaxada',
+    'Coxa Direita Contraída',
+    'Coxa Esquerda Relaxada',
+    'Coxa Esquerda Contraída',
+    'Panturrilha Direita',
+    'Panturrilha Esquerda',
+    'Braço Relaxado Direito',
+    'Braço Contraído Direito',
+    'Braço Relaxado Esquerdo',
+    'Braço Contraído Esquerdo',
+    'Antebraço Direito',
     'Antebraço Esquerdo'
   ];
 
-  final List<TextEditingController> controllers = List.generate(21, (_) => TextEditingController());
+  final List<TextEditingController> controllers =
+      List.generate(21, (_) => TextEditingController());
 
   bool isLoading = true;
   String? errorMessage;
@@ -43,11 +61,13 @@ class _AvaliacaoMedidasCorporaisViewState extends State<AvaliacaoMedidasCorporai
 
   Future<void> fetchMedidasCorporais() async {
     try {
-      final medidasSnapshot = await AvaliacaoMedidasController.listarMedidas(avaliacaoId!);
+      final medidasSnapshot =
+          await AvaliacaoMedidasController.listarMedidas(avaliacaoId!);
       if (medidasSnapshot.docs.isNotEmpty) {
         isEditing = true;
         medidasId = medidasSnapshot.docs.first.id;
-        final medidasData = medidasSnapshot.docs.first.data() as Map<String, dynamic>;
+        final medidasData =
+            medidasSnapshot.docs.first.data() as Map<String, dynamic>;
         if (medidasData != null) {
           final medidasCorporais = MedidasCorporais.fromJson(medidasData);
           for (int i = 0; i < labels.length; i++) {
@@ -120,7 +140,7 @@ class _AvaliacaoMedidasCorporaisViewState extends State<AvaliacaoMedidasCorporai
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 176, 225, 231),
-        title: const Text('Medidas Corporais', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: const Text('Medidas Corporais', style: TextStyle(fontSize: 24)),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -140,19 +160,19 @@ class _AvaliacaoMedidasCorporaisViewState extends State<AvaliacaoMedidasCorporai
                           child: ElevatedButton(
                             onPressed: () => _saveMedidasCorporais(),
                             style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue.shade100,
-                                  foregroundColor: Colors.black87,
-                                  minimumSize: const Size(200, 40),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 50, vertical: 15),
-                                  textStyle: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                            child: const Text('Salvar', style: TextStyle(fontSize: 28)),
+                              backgroundColor: Colors.blue.shade100,
+                              foregroundColor: Colors.black87,
+                              minimumSize: const Size(200, 40),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 50, vertical: 15),
+                              textStyle: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            child: const Text('Salvar',
+                                style: TextStyle(fontSize: 28)),
                           ),
                         ),
                       ],
@@ -171,13 +191,16 @@ class _AvaliacaoMedidasCorporaisViewState extends State<AvaliacaoMedidasCorporai
           labelText: label,
           prefixIcon: const Icon(Icons.fitness_center),
           suffixText: 'cm',
-          suffixStyle: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16),
+          suffixStyle: const TextStyle(
+              color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16),
           filled: true,
           fillColor: Colors.white.withOpacity(0.8),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
         keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+        ],
       ),
     );
   }
@@ -210,14 +233,17 @@ class _AvaliacaoMedidasCorporaisViewState extends State<AvaliacaoMedidasCorporai
       );
 
       if (isEditing) {
-        AvaliacaoMedidasController().atualizarMedidas(context, medidasCorporais, avaliacaoId!, medidasId!);
+        AvaliacaoMedidasController().atualizarMedidas(
+            context, medidasCorporais, avaliacaoId!, medidasId!);
       } else {
-        AvaliacaoMedidasController().adicionarMedidas(context, medidasCorporais, avaliacaoId!);
+        AvaliacaoMedidasController()
+            .adicionarMedidas(context, medidasCorporais, avaliacaoId!);
       }
     }
   }
 
-  double _parseDouble(String value) => value.isEmpty ? 0.0 : double.parse(value);
+  double _parseDouble(String value) =>
+      value.isEmpty ? 0.0 : double.parse(value);
 
   @override
   void dispose() {

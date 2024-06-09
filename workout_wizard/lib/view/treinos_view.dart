@@ -22,9 +22,9 @@ class _TreinosViewState extends State<TreinosView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 220, 235, 238),
+      //backgroundColor: Color.fromARGB(255, 220, 235, 238),
       appBar: AppBar(
-        backgroundColor: Color.fromARGB(255, 220, 235, 238),
+        backgroundColor: const Color.fromARGB(255, 176, 225, 231),
         title: Text('Treinos'),
       ),
       body: Padding(
@@ -72,7 +72,7 @@ class _TreinosViewState extends State<TreinosView> {
                                     txtTreino.text = item['ds_treino'];
                                     salvarTreino(context, docId: id);
                                   },
-                                  icon: Icon(Icons.edit_note_sharp),
+                                  icon: Icon(Icons.edit_rounded),
                                 ),
                                 IconButton(
                                   onPressed: () {
@@ -103,7 +103,7 @@ class _TreinosViewState extends State<TreinosView> {
                                       },
                                     );
                                   },
-                                  icon: Icon(Icons.delete_outlined),
+                                  icon: Icon(Icons.delete, color: Colors.red),
                                 ),
                               ],
                             ),

@@ -21,8 +21,7 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Avaliações físicas',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: const Text('Avaliações físicas', style: TextStyle(fontSize: 24)),
         backgroundColor: const Color.fromARGB(255, 176, 225, 231),
       ),
       body: Padding(
@@ -135,7 +134,7 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
                 ),
                 keyboardType: TextInputType.number,
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'\d')),
+                  FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
                 ],
               ),
               TextField(

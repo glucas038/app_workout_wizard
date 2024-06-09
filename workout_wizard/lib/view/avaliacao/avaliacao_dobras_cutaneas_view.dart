@@ -163,8 +163,7 @@ class _AvaliacaoDobrasCutaneasViewState
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 176, 225, 231),
-        title: const Text('Dobras Cutâneas',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: const Text('Dobras Cutâneas', style: TextStyle(fontSize: 24)),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -196,7 +195,10 @@ class _AvaliacaoDobrasCutaneasViewState
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                child: const Text('Salvar',style: TextStyle(fontSize: 28),),
+                                child: const Text(
+                                  'Salvar',
+                                  style: TextStyle(fontSize: 28),
+                                ),
                               ),
                         const SizedBox(height: 40),
                       ],

@@ -35,6 +35,7 @@ class _ExerciciosViewState extends State<ExerciciosView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 176, 225, 231),
         title: const Text('Exercícios'),
       ),
       body: Padding(
@@ -188,7 +189,7 @@ class _ExerciciosViewState extends State<ExerciciosView> {
                                               item['repeticoes'].toString();
                                           salvarTreino(context, docId: id);
                                         },
-                                        icon: const Icon(Icons.edit_rounded),
+                                        icon: const Icon(Icons.edit_note_sharp),
                                       ),
                                       IconButton(
                                         onPressed: () {
@@ -228,7 +229,8 @@ class _ExerciciosViewState extends State<ExerciciosView> {
                                             },
                                           );
                                         },
-                                        icon: const Icon(Icons.delete_rounded),
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
                                       ),
                                     ],
                                   ),

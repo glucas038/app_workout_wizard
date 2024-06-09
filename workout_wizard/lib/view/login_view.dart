@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace
-
 import 'package:flutter/material.dart';
 
 import '../controller/login_controller.dart';
@@ -12,7 +10,6 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-
   final formKey = GlobalKey<FormState>();
 
   var txtEmail = TextEditingController();
@@ -22,6 +19,11 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+    final double loginTextSize = isPortrait ? 20.0 : 10.0;
+    final double signUpTextSize = isPortrait ? 20.0 : 10.0;
+
     return Material(
       child: Scaffold(
         body: Container(
@@ -221,8 +223,8 @@ class _LoginViewState extends State<LoginView> {
                                   txtSenha.clear();
                                 }
                               },
-                              child: const Text('Log-in',
-                                  style: TextStyle(fontSize: 20)),
+                              child: Text('Log-in',
+                                  style: TextStyle(fontSize: loginTextSize)),
                             ),
                           ),
 
@@ -243,10 +245,8 @@ class _LoginViewState extends State<LoginView> {
                               onPressed: () {
                                 Navigator.pushNamed(context, 'cadastro');
                               },
-                              child: const Text('Sign-up',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                  )),
+                              child: Text('Sign-up',
+                                  style: TextStyle(fontSize: signUpTextSize)),
                             ),
                           ),
                         ],

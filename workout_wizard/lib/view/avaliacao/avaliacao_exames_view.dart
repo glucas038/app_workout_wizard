@@ -74,8 +74,7 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 176, 225, 231),
-        title: const Text('Avaliação física',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        title: const Text('Avaliação física', style: TextStyle(fontSize: 24)),
       ),
       backgroundColor: Colors.grey.shade100,
       body: isLoading
