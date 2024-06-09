@@ -1,6 +1,7 @@
 import 'package:workout_wizard/model/avaliacao.dart';
 import 'package:workout_wizard/model/dobras_cutaneas.dart';
 import 'package:workout_wizard/model/usuario.dart';
+import 'package:intl/intl.dart';
 
 class Resultado {
   String avaliacaoId;
@@ -21,7 +22,6 @@ class Resultado {
         pesoOsseo = 0.0,
         pesoResidual = 0.0,
         pesoMuscular = 0.0;
-      
 
   Resultado({
     required this.avaliacaoId,
@@ -69,17 +69,19 @@ class Resultado {
         dobras.abdominal! +
         dobras.coxa!;
 
+    int idade = calcularIdade(usuario.dataNascimento);
+
     double DC;
     if (usuario.sexo == "M") {
       DC = 1.112 -
           (0.00043499 * somaDobras) +
           (0.00000055 * somaDobras * somaDobras) -
-          (0.00028826 * usuario.idade);
+          (0.00028826 * idade);
     } else if (usuario.sexo == "F") {
       DC = 1.097 -
           (0.00046971 * somaDobras) +
           (0.00000056 * somaDobras * somaDobras) -
-          (0.00012828 * usuario.idade);
+          (0.00012828 * idade);
     } else {
       throw Exception("Sexo não reconhecido.");
     }
@@ -88,11 +90,20 @@ class Resultado {
     pesoGordura = perGordura * avaliacao.peso / 100;
     perMagra = 100 - perGordura;
     pesoMagra = avaliacao.peso - pesoGordura;
-    pesoOsseo = 0.15 * avaliacao.peso;
+    pesoOsseo = 0.175 * avaliacao.peso;
     pesoResidual =
         (usuario.sexo == "M" ? 0.241 * avaliacao.peso : 0.209 * avaliacao.peso);
     pesoMuscular = avaliacao.peso - pesoGordura - pesoOsseo - pesoResidual;
+  }
 
+  int calcularIdade(DateTime dataNascimento) {
+    DateTime hoje = DateTime.now();
+    int idade = hoje.year - dataNascimento.year;
+    if (hoje.month < dataNascimento.month ||
+        (hoje.month == dataNascimento.month && hoje.day < dataNascimento.day)) {
+      idade--;
+    }
+    return idade;
   }
 
   @override

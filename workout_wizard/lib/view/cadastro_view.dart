@@ -1,13 +1,15 @@
 import 'package:cpf_cnpj_validator/cpf_validator.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:http/http.dart' as http;
 import 'package:workout_wizard/controller/login_controller.dart';
 import 'package:workout_wizard/model/endereco.dart';
 import 'dart:convert';
-
 import 'package:workout_wizard/model/usuario.dart';
+import 'package:intl/intl.dart';
+import 'package:workout_wizard/view/util.dart';
 
 class CadastroView extends StatefulWidget {
   const CadastroView({super.key});
@@ -19,10 +21,10 @@ class CadastroView extends StatefulWidget {
 class _CadastroViewState extends State<CadastroView> {
   var formKey = GlobalKey<FormState>();
 
-  //Controladores dos campos de texto
+  // Controladores dos campos de texto
   var txtPrimeiroNome = TextEditingController();
   var txtSexo = TextEditingController();
-  var txtIdade = TextEditingController();
+  var txtDataNascimento = TextEditingController();
   var txtEmail = TextEditingController();
   var txtSenha = TextEditingController();
   var txtCpf = TextEditingController();
@@ -36,6 +38,7 @@ class _CadastroViewState extends State<CadastroView> {
 
   bool isAddressReadOnly = false;
   double forca = 0;
+  bool _obscurePassword = true;
 
   Future<void> _buscarEndereco() async {
     String cep = txtCep.text.replaceAll(RegExp(r'[^0-9]'), '');
@@ -60,6 +63,7 @@ class _CadastroViewState extends State<CadastroView> {
           throw Exception('Erro ao buscar o endereço');
         }
       } catch (e) {
+        erro(context, 'Erro ao buscar o endereço.');
         print(e);
         // Trate o erro conforme necessário
       }
@@ -70,25 +74,23 @@ class _CadastroViewState extends State<CadastroView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text(
-            'Novo cadastro',
-            style: TextStyle(fontSize: 30),
-          ),
-          backgroundColor: Colors.greenAccent),
+        title: const Text(
+          'Novo cadastro',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: const Color.fromARGB(255, 176, 225, 231),
+      ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(50, 50, 50, 100),
+          padding: const EdgeInsets.all(20),
           child: Form(
             key: formKey,
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                TextFormField(
+                _buildTextField(
                   controller: txtPrimeiroNome,
-                  style: TextStyle(fontSize: 26),
-                  decoration: InputDecoration(
-                    labelText: 'Primeiro nome',
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: 'Nome',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe um nome';
@@ -96,14 +98,10 @@ class _CadastroViewState extends State<CadastroView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: txtCpf,
-                  style: TextStyle(fontSize: 26),
-                  decoration: InputDecoration(
-                    labelText: 'CPF',
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: 'CPF',
                   inputFormatters: [
                     MaskTextInputFormatter(mask: '###.###.###-##')
                   ],
@@ -117,14 +115,10 @@ class _CadastroViewState extends State<CadastroView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: txtEmail,
-                  style: TextStyle(fontSize: 26),
-                  decoration: InputDecoration(
-                    labelText: 'E-mail',
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: 'E-mail',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe um e-mail.';
@@ -135,14 +129,11 @@ class _CadastroViewState extends State<CadastroView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildDropdownField(
                   controller: txtSexo,
-                  style: TextStyle(fontSize: 26),
-                  decoration: InputDecoration(
-                    labelText: 'Sexo',
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: 'Sexo',
+                  items: ['M', 'F'],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe um sexo.';
@@ -150,52 +141,42 @@ class _CadastroViewState extends State<CadastroView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
-                  controller: txtIdade,
-                  style: TextStyle(fontSize: 26),
-                  decoration: InputDecoration(
-                    labelText: 'Idade',
-                    border: OutlineInputBorder(),
-                  ),
+                const SizedBox(height: 20),
+                _buildDatePickerField(
+                  controller: txtDataNascimento,
+                  labelText: 'Data de Nascimento',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Informe sua idade.';
+                      return 'Informe sua data de nascimento.';
+                    }
+                    if (!_validarDataNascimento(value)) {
+                      return 'Informe uma data de nascimento válida.';
                     }
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: txtCep,
-                  style: TextStyle(fontSize: 26),
-                  decoration: InputDecoration(
-                    labelText: 'CEP',
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: 'CEP',
                   inputFormatters: [MaskTextInputFormatter(mask: '#####-###')],
+                  onChanged: (value) {
+                    if (value.length == 9) {
+                      _buscarEndereco();
+                    }
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe um CEP.';
                     }
                     return null;
                   },
-                  onChanged: (value) {
-                    if (value.length == 9) {
-                      // Quando o campo estiver completo (com a máscara)
-                      _buscarEndereco();
-                    }
-                  },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: txtLogradouro,
-                  style: TextStyle(fontSize: 26),
+                  labelText: 'Logradouro',
                   enabled: !isAddressReadOnly,
-                  decoration: InputDecoration(
-                    labelText: 'Logradouro',
-                    border: OutlineInputBorder(),
-                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe um logradouro.';
@@ -203,14 +184,10 @@ class _CadastroViewState extends State<CadastroView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: txtNumero,
-                  style: TextStyle(fontSize: 26),
-                  decoration: InputDecoration(
-                    labelText: 'Número',
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: 'Número',
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe um número.';
@@ -218,24 +195,16 @@ class _CadastroViewState extends State<CadastroView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: txtComplemento,
-                  style: TextStyle(fontSize: 26),
-                  decoration: InputDecoration(
-                    labelText: 'Complemento',
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: 'Complemento',
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: txtBairro,
-                  style: TextStyle(fontSize: 26),
+                  labelText: 'Bairro',
                   enabled: !isAddressReadOnly,
-                  decoration: InputDecoration(
-                    labelText: 'Bairro',
-                    border: OutlineInputBorder(),
-                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe um bairro.';
@@ -243,15 +212,11 @@ class _CadastroViewState extends State<CadastroView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: txtCidade,
-                  style: TextStyle(fontSize: 26),
+                  labelText: 'Cidade',
                   enabled: !isAddressReadOnly,
-                  decoration: InputDecoration(
-                    labelText: 'Cidade',
-                    border: OutlineInputBorder(),
-                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe uma cidade.';
@@ -259,15 +224,11 @@ class _CadastroViewState extends State<CadastroView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: txtEstado,
-                  style: TextStyle(fontSize: 26),
+                  labelText: 'Estado',
                   enabled: !isAddressReadOnly,
-                  decoration: InputDecoration(
-                    labelText: 'Estado',
-                    border: OutlineInputBorder(),
-                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe um estado.';
@@ -275,45 +236,45 @@ class _CadastroViewState extends State<CadastroView> {
                     return null;
                   },
                 ),
-                SizedBox(height: 30),
-                TextFormField(
+                const SizedBox(height: 20),
+                _buildPasswordField(
                   controller: txtSenha,
-                  style: TextStyle(fontSize: 26),
-                  decoration: InputDecoration(
-                    labelText: 'Senha',
-                    border: OutlineInputBorder(),
-                  ),
+                  labelText: 'Senha',
                   onChanged: (value) {
                     setState(() {
                       forca = calcularForcaSenha(value);
-                      calcularCor(forca);
                     });
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Informe uma senha';
                     }
-                    if (calcularForcaSenha(value) < 0.4) {
-                      return 'Senha muito fraca.';
+                    if (!validarRequisitosSenha(value)) {
+                      return 'A senha não atende a todos os requisitos.';
                     }
                     return null;
                   },
                 ),
+                const SizedBox(height: 10),
+                _buildPasswordCriteria(txtSenha.text),
+                const SizedBox(height: 20),
                 LinearProgressIndicator(
-                  value: calcularForcaSenha(txtSenha.text),
+                  value: forca,
                   backgroundColor: Colors.grey[300],
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                      calcularCor(calcularForcaSenha(txtSenha.text))),
+                  valueColor: AlwaysStoppedAnimation<Color>(calcularCor(forca)),
                 ),
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade100,
                     foregroundColor: Colors.black87,
-                    minimumSize: Size(200, 40),
+                    minimumSize: const Size(200, 40),
                   ),
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
+                      DateTime dataNascimento = DateFormat('dd/MM/yyyy')
+                          .parse(txtDataNascimento.text);
+
                       Usuario usuario = Usuario(
                         txtPrimeiroNome.text,
                         txtCpf.text,
@@ -325,13 +286,15 @@ class _CadastroViewState extends State<CadastroView> {
                           txtNumero.text,
                         ),
                         txtSexo.text,
-                        double.parse(txtIdade.text),
+                        dataNascimento,
                       );
                       LoginController().criarConta(
                           context, txtEmail.text, txtSenha.text, usuario);
+                    } else {
+                      erro(context, 'Corrija os campos inválidos.');
                     }
                   },
-                  child: Text(
+                  child: const Text(
                     'Cadastrar',
                     style: TextStyle(fontSize: 28),
                   ),
@@ -344,32 +307,200 @@ class _CadastroViewState extends State<CadastroView> {
     );
   }
 
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String labelText,
+    bool enabled = true,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+    void Function(String)? onChanged,
+  }) {
+    return TextFormField(
+      controller: controller,
+      style: const TextStyle(fontSize: 18),
+      decoration: InputDecoration(
+        labelText: labelText,
+        border: const OutlineInputBorder(),
+      ),
+      enabled: enabled,
+      inputFormatters: inputFormatters,
+      validator: validator,
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String labelText,
+    String? Function(String?)? validator,
+    void Function(String)? onChanged,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: _obscurePassword,
+      decoration: InputDecoration(
+        labelText: labelText,
+        border: const OutlineInputBorder(),
+        prefixIcon: const Icon(Icons.password),
+        suffixIcon: IconButton(
+          icon:
+              Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+          onPressed: () {
+            setState(() {
+              _obscurePassword = !_obscurePassword;
+            });
+          },
+        ),
+      ),
+      style: const TextStyle(fontSize: 18),
+      validator: validator,
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildDropdownField({
+    required TextEditingController controller,
+    required String labelText,
+    required List<String> items,
+    String? Function(String?)? validator,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: controller.text.isEmpty ? null : controller.text,
+      decoration: InputDecoration(
+        labelText: labelText,
+        border: const OutlineInputBorder(),
+      ),
+      items: items.map((item) {
+        return DropdownMenuItem<String>(
+          value: item,
+          child: Text(item),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          controller.text = value!;
+        });
+      },
+      validator: validator,
+    );
+  }
+
+  Widget _buildDatePickerField({
+    required TextEditingController controller,
+    required String labelText,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      readOnly: true,
+      style: const TextStyle(fontSize: 18),
+      decoration: InputDecoration(
+        labelText: labelText,
+        border: const OutlineInputBorder(),
+      ),
+      onTap: () async {
+        DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+          // locale: const Locale('pt', 'BR'),
+        );
+        if (pickedDate != null) {
+          setState(() {
+            controller.text = DateFormat('dd/MM/yyyy').format(pickedDate);
+          });
+        }
+      },
+      validator: validator,
+    );
+  }
+
+  Widget _buildPasswordCriteria(String password) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPasswordCriterion(
+          'Pelo menos 6 caracteres',
+          password.length >= 6,
+        ),
+        _buildPasswordCriterion(
+          'Pelo menos uma letra maiúscula',
+          password.contains(RegExp(r'[A-Z]')),
+        ),
+        _buildPasswordCriterion(
+          'Pelo menos uma letra minúscula',
+          password.contains(RegExp(r'[a-z]')),
+        ),
+        _buildPasswordCriterion(
+          'Pelo menos um número',
+          password.contains(RegExp(r'[0-9]')),
+        ),
+        _buildPasswordCriterion(
+          'Pelo menos um caractere especial',
+          password.contains(RegExp(r'[!@#\$&*~]')),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasswordCriterion(String criterion, bool met) {
+    return Row(
+      children: [
+        Icon(
+          met ? Icons.check : Icons.close,
+          color: met ? Colors.green : Colors.red,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          criterion,
+          style: TextStyle(color: met ? Colors.green : Colors.red),
+        ),
+      ],
+    );
+  }
+
+  bool validarRequisitosSenha(String senha) {
+    return senha.length >= 6 &&
+        senha.contains(RegExp(r'[A-Z]')) &&
+        senha.contains(RegExp(r'[a-z]')) &&
+        senha.contains(RegExp(r'[0-9]')) &&
+        senha.contains(RegExp(r'[!@#\$&*~]'));
+  }
+
   double calcularForcaSenha(String senha) {
     int comprimento = senha.length;
-    if (comprimento < 6) {
-      return 0.2; // Muito fraca
-    } else if (comprimento < 8) {
-      return 0.4; // Fraca
-    } else if (comprimento < 10) {
-      return 0.6; // Média
-    } else if (comprimento < 12) {
-      return 0.8; // Forte
-    } else {
-      return 1.0; // Muito forte
-    }
+    int forca = 0;
+
+    if (comprimento >= 6) forca += 1;
+    if (senha.contains(RegExp(r'[A-Z]'))) forca += 1;
+    if (senha.contains(RegExp(r'[a-z]'))) forca += 1;
+    if (senha.contains(RegExp(r'[0-9]'))) forca += 1;
+    if (senha.contains(RegExp(r'[!@#\$&*~]'))) forca += 1;
+
+    return forca / 5;
   }
 
   Color calcularCor(double forca) {
-    if (forca == 0.2) {
+    if (forca <= 0.2) {
       return Colors.redAccent; // Muito fraca
-    } else if (forca == 0.4) {
+    } else if (forca <= 0.4) {
       return Colors.orangeAccent; // Fraca
-    } else if (forca == 0.6) {
+    } else if (forca <= 0.6) {
       return Colors.yellowAccent; // Média
-    } else if (forca == 0.8) {
+    } else if (forca <= 0.8) {
       return Colors.greenAccent.shade100; // Forte
     } else {
       return Colors.greenAccent.shade700; // Muito forte
+    }
+  }
+
+  bool _validarDataNascimento(String dataNascimento) {
+    try {
+      DateFormat('dd/MM/yyyy').parse(dataNascimento);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 }

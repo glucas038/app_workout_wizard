@@ -4,22 +4,21 @@ import 'package:workout_wizard/controller/avaliacao_controller.dart';
 import 'package:workout_wizard/controller/avaliacao_dobras_controller.dart';
 import 'package:workout_wizard/controller/avaliacao_resultado.dart';
 import 'package:workout_wizard/controller/login_controller.dart';
-import 'package:workout_wizard/model/avaliacao.dart';
 import 'package:workout_wizard/model/dobras_cutaneas.dart';
 import 'package:workout_wizard/model/resultado.dart';
+import 'package:workout_wizard/view/util.dart';
 
 class AvaliacaoDobrasCutaneasView extends StatefulWidget {
   const AvaliacaoDobrasCutaneasView({super.key});
 
   @override
-  State<AvaliacaoDobrasCutaneasView> createState() =>
+  _AvaliacaoDobrasCutaneasViewState createState() =>
       _AvaliacaoDobrasCutaneasViewState();
 }
 
 class _AvaliacaoDobrasCutaneasViewState
     extends State<AvaliacaoDobrasCutaneasView> {
   final _formKey = GlobalKey<FormState>();
-
   final List<String> labels = [
     'Tríceps',
     'Peitoral',
@@ -29,9 +28,8 @@ class _AvaliacaoDobrasCutaneasViewState
     'Abdominal',
     'Coxa',
   ];
-
   final List<TextEditingController> controllers =
-      List.generate(12, (_) => TextEditingController());
+      List.generate(7, (_) => TextEditingController());
 
   bool isLoading = true;
   String? errorMessage;
@@ -39,6 +37,7 @@ class _AvaliacaoDobrasCutaneasViewState
   bool isEditing = false;
   String? dobrasId;
   String? resultadoId;
+  bool isSaving = false; // Para o feedback de salvamento
 
   @override
   void initState() {
@@ -49,7 +48,7 @@ class _AvaliacaoDobrasCutaneasViewState
     });
   }
 
-  void fetchDobrasCutaneas() async {
+  Future<void> fetchDobrasCutaneas() async {
     try {
       if (avaliacaoId != null) {
         final dobrasSnapshot =
@@ -58,12 +57,10 @@ class _AvaliacaoDobrasCutaneasViewState
             .getResultadoStream(avaliacaoId!)
             .first;
         resultadoId = resultadoSnapshot.docs.first.id;
-        print('Resultado ID: $resultadoId');
 
         if (dobrasSnapshot.docs.isNotEmpty) {
           isEditing = true;
           dobrasId = dobrasSnapshot.docs.first.id;
-
           final dobrasData =
               dobrasSnapshot.docs.first.data() as Map<String, dynamic>;
 
@@ -71,16 +68,16 @@ class _AvaliacaoDobrasCutaneasViewState
             final dobrasCutaneas = DobrasCutaneas.fromJson(dobrasData);
             setState(() {
               for (int i = 0; i < labels.length; i++) {
-                final String label = labels[i];
-                final String value = getValueByLabel(label, dobrasCutaneas);
-                controllers[i].text = (value != '0') ? value : '';
+                controllers[i].text =
+                    getValueByLabel(labels[i], dobrasCutaneas) != '0'
+                        ? getValueByLabel(labels[i], dobrasCutaneas)
+                        : '';
               }
               isLoading = false;
             });
           }
         } else {
           setState(() {
-            //errorMessage = 'Documento de avaliação não encontrado';
             isLoading = false;
           });
         }
@@ -114,110 +111,94 @@ class _AvaliacaoDobrasCutaneasViewState
     }
   }
 
+  Future<void> _onSave() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => isSaving = true); // Inicia o feedback de salvamento
+
+      final dobrasCutaneas = DobrasCutaneas(
+        protocolo: 'Pollock 7',
+        avalicaoId: avaliacaoId!,
+        triceps: _parseDoubleValue(controllers[0].text),
+        peitoral: _parseDoubleValue(controllers[1].text),
+        axilarMedia: _parseDoubleValue(controllers[2].text),
+        subescapular: _parseDoubleValue(controllers[3].text),
+        supraIliaca: _parseDoubleValue(controllers[4].text),
+        abdominal: _parseDoubleValue(controllers[5].text),
+        coxa: _parseDoubleValue(controllers[6].text),
+      );
+
+      bool hasAll7Measures =
+          controllers.every((controller) => controller.text.isNotEmpty);
+      final resultado = Resultado.isEmpty();
+
+      if (hasAll7Measures) {
+        try {
+          final usuario = await LoginController().pegarUsuario();
+          final avaliacao =
+              await AvaliacaoController().getAvaliacao(avaliacaoId!);
+          resultado.pollock7(dobrasCutaneas, usuario, avaliacao);
+          AvaliacaoResultadoController().atualizarResultado(
+              context, resultado, avaliacaoId!, resultadoId!);
+        } catch (e) {
+          erro(context, 'Ocorreu um erro: $e');
+        }
+      }
+
+      isEditing
+          ? AvaliacaoDobrasController()
+              .atualizarDobras(context, dobrasCutaneas, avaliacaoId!, dobrasId!)
+          : AvaliacaoDobrasController()
+              .adicionarDobras(context, dobrasCutaneas, avaliacaoId!);
+
+      setState(() => isSaving = false); // Termina o feedback de salvamento
+    }
+  }
+
+  double _parseDoubleValue(String value) {
+    return value.isEmpty ? 0.0 : double.parse(value);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green.shade200,
-        title: Text('Dobras Cutaneas'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              //LoginController().logout();
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.exit_to_app),
-          )
-        ],
+        backgroundColor: const Color.fromARGB(255, 176, 225, 231),
+        title: const Text('Dobras Cutâneas',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
               ? Center(child: Text(errorMessage!))
               : SingleChildScrollView(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
-                        SizedBox(height: 10),
-                        for (int i = 0; i < labels.length; i++)
-                          _buildTextFormField(labels[i], controllers[i]),
-                        //
-                        SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              final dobrasCutaneas = DobrasCutaneas(
-                                protocolo: 'Pollock 7',
-                                avalicaoId: avaliacaoId!,
-                                triceps: parseDoubleValue(controllers[0].text),
-                                peitoral: parseDoubleValue(controllers[1].text),
-                                axilarMedia:
-                                    parseDoubleValue(controllers[2].text),
-                                subescapular:
-                                    parseDoubleValue(controllers[3].text),
-                                supraIliaca:
-                                    parseDoubleValue(controllers[4].text),
-                                abdominal:
-                                    parseDoubleValue(controllers[5].text),
-                                coxa: parseDoubleValue(controllers[6].text),
-                              );
-
-                              // Verifica se as 7 medidas estão presentes
-                              bool hasAll7Measures = [
-                                controllers[0].text,
-                                controllers[1].text,
-                                controllers[2].text,
-                                controllers[3].text,
-                                controllers[4].text,
-                                controllers[5].text,
-                                controllers[6].text
-                              ].every((text) => text.isNotEmpty);
-
-                              final resultado = Resultado.isEmpty();
-
-                              if (hasAll7Measures) {
-                                try {
-                                  print('Salvando');
-
-                                  print('avalicaoId: $avaliacaoId');
-                                  final usuario =
-                                      await LoginController().pegarUsuario();
-                                  print(usuario);
-
-                                  final avaliacao = await AvaliacaoController()
-                                      .getAvaliacao(avaliacaoId!);
-                                  print(avaliacao);
-
-                                  resultado.pollock7(
-                                      dobrasCutaneas, usuario, avaliacao);
-
-                                  resultado.pollock7(
-                                      dobrasCutaneas, usuario, avaliacao);
-                                  print(resultado);
-
-                                  AvaliacaoResultadoController()
-                                      .atualizarResultado(context, resultado,
-                                          avaliacaoId!, resultadoId!);
-                                } catch (e) {
-                                  print('Ocorreu um erro: $e');
-                                }
-                              }
-
-                              isEditing
-                                  ? AvaliacaoDobrasController().atualizarDobras(
-                                      context,
-                                      dobrasCutaneas,
-                                      avaliacaoId!,
-                                      dobrasId!)
-                                  : AvaliacaoDobrasController().adicionarDobras(
-                                      context, dobrasCutaneas, avaliacaoId!);
-                            }
-                          },
-                          child: Text('Salvar'),
-                        ),
-                        SizedBox(height: 40),
+                        const SizedBox(height: 20),
+                        ..._buildTextFormFields(),
+                        const SizedBox(height: 30),
+                        isSaving
+                            ? const CircularProgressIndicator() // Feedback de carregamento
+                            : ElevatedButton(
+                                onPressed: _onSave,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue.shade100,
+                                  foregroundColor: Colors.black87,
+                                  minimumSize: const Size(200, 40),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 50, vertical: 15),
+                                  textStyle: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                child: const Text('Salvar',style: TextStyle(fontSize: 28),),
+                              ),
+                        const SizedBox(height: 40),
                       ],
                     ),
                   ),
@@ -225,45 +206,42 @@ class _AvaliacaoDobrasCutaneasViewState
     );
   }
 
-  Widget _buildTextFormField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(Icons.fitness_center),
-          prefixText: '   ', // Add space for the icon and suffix
-          suffixText: 'mm',
-          suffixStyle: TextStyle(
-            color: Colors.grey, // Suffix color
-            fontWeight: FontWeight.bold, // Font weight
-            fontSize: 16, // Font size
+  List<Widget> _buildTextFormFields() {
+    return List<Widget>.generate(
+      labels.length,
+      (index) => Padding(
+        padding: const EdgeInsets.only(bottom: 15),
+        child: TextFormField(
+          controller: controllers[index],
+          decoration: InputDecoration(
+            labelText: labels[index],
+            prefixIcon: const Icon(Icons.fitness_center),
+            suffixText: 'mm',
+            suffixStyle: const TextStyle(
+              color: Colors.grey,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.8),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
-          filled: true,
-          fillColor: Colors.white.withOpacity(0.8),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
+          ],
         ),
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
-        ], // Allow only numbers and dot
       ),
     );
   }
 
   @override
   void dispose() {
-    controllers.forEach((controller) => controller.dispose());
-    super.dispose();
-  }
-
-  double parseDoubleValue(String value) {
-    if (value.isEmpty) {
-      return 0.0;
+    for (var controller in controllers) {
+      controller.dispose();
     }
-    return double.parse(value);
+    super.dispose();
   }
 }

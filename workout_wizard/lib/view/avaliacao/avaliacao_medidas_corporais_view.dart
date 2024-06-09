@@ -1,50 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:workout_wizard/controller/avaliacao_medidas_controller.dart';
-import 'package:workout_wizard/controller/login_controller.dart';
-
 import 'package:workout_wizard/model/medidas_corporais.dart';
 
 class AvaliacaoMedidasCorporaisView extends StatefulWidget {
   const AvaliacaoMedidasCorporaisView({Key? key}) : super(key: key);
 
   @override
-  _AvaliacaoMedidasCorporaisViewState createState() =>
-      _AvaliacaoMedidasCorporaisViewState();
+  _AvaliacaoMedidasCorporaisViewState createState() => _AvaliacaoMedidasCorporaisViewState();
 }
 
-class _AvaliacaoMedidasCorporaisViewState
-    extends State<AvaliacaoMedidasCorporaisView> {
+class _AvaliacaoMedidasCorporaisViewState extends State<AvaliacaoMedidasCorporaisView> {
   final _formKey = GlobalKey<FormState>();
 
-  List<String>? labels = [
-    'Pescoço',
-    'Ombro',
-    'Toráx Inspirado',
-    'Toráx Expirado',
-    'Peitoral',
-    'Cintura Escapular',
-    'Cintura',
-    'Abdomen',
-    'Quadril',
-    'Coxa Direita Relaxada',
-    'Coxa Direita Contraída',
-    'Coxa Esquerda Relaxada',
-    'Coxa Esquerda Contraída',
-    'Panturrilha Direita',
-    'Panturrilha Esquerda',
-    'Braço Relaxado Direito',
-    'Braço Contraído Direito',
-    'Braço Relaxado Esquerdo',
-    'Braço Contraído Esquerdo',
-    'Antebraço Direito',
-    'Antebraço Esquerdo',
+  final List<String> labels = [
+    'Pescoço', 'Ombro', 'Toráx Inspirado', 'Toráx Expirado', 'Peitoral', 'Cintura Escapular',
+    'Cintura', 'Abdomen', 'Quadril', 'Coxa Direita Relaxada', 'Coxa Direita Contraída',
+    'Coxa Esquerda Relaxada', 'Coxa Esquerda Contraída', 'Panturrilha Direita',
+    'Panturrilha Esquerda', 'Braço Relaxado Direito', 'Braço Contraído Direito',
+    'Braço Relaxado Esquerdo', 'Braço Contraído Esquerdo', 'Antebraço Direito',
+    'Antebraço Esquerdo'
   ];
 
-  List<TextEditingController>? controllers = List.generate(
-    21, // Usando a lista labels já inicializada
-    (_) => TextEditingController(),
-  );
+  final List<TextEditingController> controllers = List.generate(21, (_) => TextEditingController());
 
   bool isLoading = true;
   String? errorMessage;
@@ -55,56 +33,31 @@ class _AvaliacaoMedidasCorporaisViewState
   @override
   void initState() {
     super.initState();
-    @override
-    void initState() {
-      super.initState();
-
-      WidgetsBinding.instance!.addPostFrameCallback((_) {
-        avaliacaoId = ModalRoute.of(context)!.settings.arguments as String;
-        fetchMedidasCorporais();
-      });
-    }
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      avaliacaoId = ModalRoute.of(context)!.settings.arguments as String;
-      fetchMedidasCorporais();
+      avaliacaoId = ModalRoute.of(context)!.settings.arguments as String?;
+      if (avaliacaoId != null) {
+        fetchMedidasCorporais();
+      }
     });
   }
 
-  void fetchMedidasCorporais() async {
+  Future<void> fetchMedidasCorporais() async {
     try {
-      if (avaliacaoId != null) {
-        final medidasSnapshot =
-            await AvaliacaoMedidasController.listarMedidas(avaliacaoId!);
-
-        print(medidasSnapshot.docs.isNotEmpty);
-        print(medidasSnapshot.docs.toString());
-        if (medidasSnapshot.docs.isNotEmpty) {
-          isEditing = true;
-          medidasId = medidasSnapshot.docs.first.id;
-
-          final medidasData =
-              medidasSnapshot.docs.first.data() as Map<String, dynamic>;
-          print(medidasData.toString());
-          print(medidasData != null);
-          if (medidasData != null) {
-            final medidasCorporais = MedidasCorporais.fromJson(medidasData);
-            setState(() {
-              for (int i = 0; i < labels!.length; i++) {
-                final String label = labels![i];
-                final String value = getValueByLabel(label, medidasCorporais);
-                controllers![i].text = (value != '0') ? value : '';
-              }
-              isLoading = false;
-            });
+      final medidasSnapshot = await AvaliacaoMedidasController.listarMedidas(avaliacaoId!);
+      if (medidasSnapshot.docs.isNotEmpty) {
+        isEditing = true;
+        medidasId = medidasSnapshot.docs.first.id;
+        final medidasData = medidasSnapshot.docs.first.data() as Map<String, dynamic>;
+        if (medidasData != null) {
+          final medidasCorporais = MedidasCorporais.fromJson(medidasData);
+          for (int i = 0; i < labels.length; i++) {
+            final String label = labels[i];
+            final String value = getValueByLabel(label, medidasCorporais);
+            controllers[i].text = (value != '0') ? value : '';
           }
-        } else {
-          setState(() {
-            //errorMessage = 'Documento de avaliação não encontrado';
-            isLoading = false;
-          });
         }
       }
+      setState(() => isLoading = false);
     } catch (error) {
       setState(() {
         errorMessage = 'Erro ao buscar dados: $error';
@@ -166,82 +119,42 @@ class _AvaliacaoMedidasCorporaisViewState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green.shade200,
-        title: Text('Medidas Corporais'),
+        backgroundColor: const Color.fromARGB(255, 176, 225, 231),
+        title: const Text('Medidas Corporais', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
               ? Center(child: Text(errorMessage!))
               : SingleChildScrollView(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Form(
                     key: _formKey,
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 10),
-                        for (int i = 0; i < labels!.length; i++)
-                          _buildTextFormField(labels![i], controllers![i]),
-                        SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              final medidasCorporais = MedidasCorporais(
-                                avalicaoId: avaliacaoId!,
-                                pescoco: parseDoubleValue(controllers![0].text),
-                                ombro: parseDoubleValue(controllers![1].text),
-                                toraxInspirado:
-                                    parseDoubleValue(controllers![2].text),
-                                toraxExpirado:
-                                    parseDoubleValue(controllers![3].text),
-                                peitoral:
-                                    parseDoubleValue(controllers![4].text),
-                                cinturaEscapular:
-                                    parseDoubleValue(controllers![5].text),
-                                cintura: parseDoubleValue(controllers![6].text),
-                                abdomen: parseDoubleValue(controllers![7].text),
-                                quadril: parseDoubleValue(controllers![8].text),
-                                coxaDireitaRelaxada:
-                                    parseDoubleValue(controllers![9].text),
-                                coxaDireitaContraida:
-                                    parseDoubleValue(controllers![10].text),
-                                coxaEsquerdaRelaxada:
-                                    parseDoubleValue(controllers![11].text),
-                                coxaEsquerdaContraida:
-                                    parseDoubleValue(controllers![12].text),
-                                panturrilhaDireita:
-                                    parseDoubleValue(controllers![13].text),
-                                panturrilhaEsquerda:
-                                    parseDoubleValue(controllers![14].text),
-                                bracoRelaxadoDireita:
-                                    parseDoubleValue(controllers![15].text),
-                                bracoContraidoDireita:
-                                    parseDoubleValue(controllers![16].text),
-                                bracoRelaxadoEsquerdo:
-                                    parseDoubleValue(controllers![17].text),
-                                bracoContraidoEsquerdo:
-                                    parseDoubleValue(controllers![18].text),
-                                antebracoDireito:
-                                    parseDoubleValue(controllers![19].text),
-                                antebracoEsquerdo:
-                                    parseDoubleValue(controllers![20].text),
-                              );
-
-                              isEditing
-                                  ? AvaliacaoMedidasController()
-                                      .atualizarMedidas(
-                                          context,
-                                          medidasCorporais,
-                                          avaliacaoId!,
-                                          medidasId!)
-                                  : AvaliacaoMedidasController()
-                                      .adicionarMedidas(context,
-                                          medidasCorporais, avaliacaoId!);
-                            }
-                          },
-                          child: Text('Salvar'),
+                        for (int i = 0; i < labels.length; i++)
+                          _buildTextFormField(labels[i], controllers[i]),
+                        const SizedBox(height: 20),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () => _saveMedidasCorporais(),
+                            style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue.shade100,
+                                  foregroundColor: Colors.black87,
+                                  minimumSize: const Size(200, 40),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 50, vertical: 15),
+                                  textStyle: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                            child: const Text('Salvar', style: TextStyle(fontSize: 28)),
+                          ),
                         ),
-                        SizedBox(height: 40),
                       ],
                     ),
                   ),
@@ -256,38 +169,61 @@ class _AvaliacaoMedidasCorporaisViewState
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: Icon(Icons.fitness_center),
-          prefixText: '   ', // Add space for the icon and suffix
+          prefixIcon: const Icon(Icons.fitness_center),
           suffixText: 'cm',
-          suffixStyle: TextStyle(
-            color: Colors.grey, // Suffix color
-            fontWeight: FontWeight.bold, // Font weight
-            fontSize: 16, // Font size
-          ),
+          suffixStyle: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16),
           filled: true,
           fillColor: Colors.white.withOpacity(0.8),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         ),
         keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))
-        ], // Allow only numbers and dot
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
       ),
     );
   }
 
-  @override
-  void dispose() {
-    controllers!.forEach((controller) => controller.dispose());
-    super.dispose();
+  void _saveMedidasCorporais() {
+    if (_formKey.currentState!.validate()) {
+      final medidasCorporais = MedidasCorporais(
+        avalicaoId: avaliacaoId!,
+        pescoco: _parseDouble(controllers[0].text),
+        ombro: _parseDouble(controllers[1].text),
+        toraxInspirado: _parseDouble(controllers[2].text),
+        toraxExpirado: _parseDouble(controllers[3].text),
+        peitoral: _parseDouble(controllers[4].text),
+        cinturaEscapular: _parseDouble(controllers[5].text),
+        cintura: _parseDouble(controllers[6].text),
+        abdomen: _parseDouble(controllers[7].text),
+        quadril: _parseDouble(controllers[8].text),
+        coxaDireitaRelaxada: _parseDouble(controllers[9].text),
+        coxaDireitaContraida: _parseDouble(controllers[10].text),
+        coxaEsquerdaRelaxada: _parseDouble(controllers[11].text),
+        coxaEsquerdaContraida: _parseDouble(controllers[12].text),
+        panturrilhaDireita: _parseDouble(controllers[13].text),
+        panturrilhaEsquerda: _parseDouble(controllers[14].text),
+        bracoRelaxadoDireita: _parseDouble(controllers[15].text),
+        bracoContraidoDireita: _parseDouble(controllers[16].text),
+        bracoRelaxadoEsquerdo: _parseDouble(controllers[17].text),
+        bracoContraidoEsquerdo: _parseDouble(controllers[18].text),
+        antebracoDireito: _parseDouble(controllers[19].text),
+        antebracoEsquerdo: _parseDouble(controllers[20].text),
+      );
+
+      if (isEditing) {
+        AvaliacaoMedidasController().atualizarMedidas(context, medidasCorporais, avaliacaoId!, medidasId!);
+      } else {
+        AvaliacaoMedidasController().adicionarMedidas(context, medidasCorporais, avaliacaoId!);
+      }
+    }
   }
 
-  double parseDoubleValue(String value) {
-    if (value.isEmpty) {
-      return 0.0;
+  double _parseDouble(String value) => value.isEmpty ? 0.0 : double.parse(value);
+
+  @override
+  void dispose() {
+    for (var controller in controllers) {
+      controller.dispose();
     }
-    return double.parse(value);
+    super.dispose();
   }
 }

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:workout_wizard/controller/avaliacao_controller.dart';
 import 'package:workout_wizard/controller/avaliacao_resultado.dart';
@@ -13,12 +14,8 @@ class AvaliacaoExamesView extends StatefulWidget {
 }
 
 class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
-  List<String> exames = [
-    'Medidas corporais',
-    'Dobras cutâneas',
-  ];
-
-  String avaliacaoId = '';
+  final List<String> exames = ['Medidas corporais', 'Dobras cutâneas'];
+  late String avaliacaoId;
   Map<String, dynamic>? avaliacaoData;
   bool isLoading = true;
   String? errorMessage;
@@ -27,7 +24,6 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
   @override
   void initState() {
     super.initState();
-    // Recupera o docId quando o widget é inicializado
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         avaliacaoId = ModalRoute.of(context)!.settings.arguments as String;
@@ -36,25 +32,22 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
     });
   }
 
-  void fetchAvaliacaoData() async {
+  Future<void> fetchAvaliacaoData() async {
     try {
       DocumentReference avaliacaoRef =
           AvaliacaoController().pegarAvaliacao(avaliacaoId);
       DocumentSnapshot snapshot = await avaliacaoRef.get();
 
       final resultadoSnapshot =
-          await AvaliacaoResultadoController().listarResultado(avaliacaoId!);
+          await AvaliacaoResultadoController().listarResultado(avaliacaoId);
 
       if (resultadoSnapshot.docs.isNotEmpty) {
         resultado = await AvaliacaoResultadoController()
             .getResultado(resultadoSnapshot.docs.first.id, avaliacaoId);
       } else {
         resultado = Resultado.isEmpty();
-        AvaliacaoResultadoController().adicionarResultado(
-          context,
-          resultado!,
-          avaliacaoId,
-        ); // Inicialize com valores padrões
+        AvaliacaoResultadoController()
+            .adicionarResultado(context, resultado!, avaliacaoId);
       }
 
       if (snapshot.exists) {
@@ -80,220 +73,212 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green.shade200,
-        title: Text('Avaliação física'),
+        backgroundColor: const Color.fromARGB(255, 176, 225, 231),
+        title: const Text('Avaliação física',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
       ),
       backgroundColor: Colors.grey.shade100,
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
               ? Center(child: Text(errorMessage!))
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            formatDate(
-                                (avaliacaoData?['data'] as Timestamp).toDate()),
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            avaliacaoData != null
-                                ? "IMC: ${avaliacaoData!['imc'] != null ? avaliacaoData!['imc'].toStringAsFixed(2) : ''} - ${calcularCategoriaImc(avaliacaoData!['imc'])}"
-                                : "",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    // Composição Corporal Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: Colors.grey.shade300,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.shade400,
-                              blurRadius: 5.0,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child:
-                            StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                          stream: AvaliacaoResultadoController()
-                              .getResultadoStream(avaliacaoId),
-                          builder: (context, resultadoSnapshot) {
-                            if (resultadoSnapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return Center(child: CircularProgressIndicator());
-                            }
-
-                            if (resultadoSnapshot.hasError) {
-                              return Center(
-                                  child: Text(
-                                      'Erro ao buscar resultados: ${resultadoSnapshot.error}'));
-                            }
-
-                            if (!resultadoSnapshot.hasData ||
-                                resultadoSnapshot.data!.docs.isEmpty) {
-                              return Center(
-                                  child: Text('Nenhum resultado encontrado'));
-                            }
-
-                            final resultado = Resultado.fromJson(
-                                resultadoSnapshot.data!.docs.first.data()
-                                    as Map<String, dynamic>);
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(15.0),
-                                  child: Text(
-                                    'Composição corporal',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Divider(height: 1, color: Colors.grey),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(10, 10, 10, 5),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildComposicaoCard(
-                                            'Gordura Corporal',
-                                            '${resultado.pesoGordura.toStringAsFixed(2)} kg',
-                                            '${resultado.perGordura.toStringAsFixed(2)}%'),
-                                      ),
-                                      SizedBox(width: 2),
-                                      Expanded(
-                                        child: _buildComposicaoCard(
-                                            'Massa Magra',
-                                            '${resultado.pesoMagra.toStringAsFixed(2)} kg',
-                                            '${resultado.perMagra.toStringAsFixed(2)}%'),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(10, 5, 10, 10),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: _buildComposicaoCard(
-                                            'Muscular',
-                                            '${resultado.pesoMuscular.toStringAsFixed(2)} kg',
-                                            ''),
-                                      ),
-                                      SizedBox(width: 2),
-                                      Expanded(
-                                        child: _buildComposicaoCard(
-                                            'Ósseo',
-                                            '${resultado.pesoOsseo.toStringAsFixed(2)} kg',
-                                            ''),
-                                      ),
-                                      SizedBox(width: 2),
-                                      Expanded(
-                                        child: _buildComposicaoCard(
-                                            'Residual',
-                                            '${resultado.pesoResidual.toStringAsFixed(2)} kg',
-                                            ''),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(0.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: Colors.grey.shade300,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.shade400,
-                                blurRadius: 5.0,
-                                offset: Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(15.0),
-                                child: Text(
-                                  'Exames Disponíveis',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              Divider(height: 1, color: Colors.grey),
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    Card(
-                                      child: ListTile(
-                                        title: Text(exames[0]),
-                                        onTap: () {
-                                          Navigator.pushNamed(
-                                              context, 'avaliacao_medidas',
-                                              arguments: avaliacaoId);
-                                        },
-                                      ),
-                                    ),
-                                    Card(
-                                      child: ListTile(
-                                        title: Text(exames[1]),
-                                        onTap: () {
-                                          Navigator.pushNamed(
-                                              context, 'avaliacao_dobras',
-                                              arguments: avaliacaoId);
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+              : SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 10),
+                      _buildComposicaoCorporalSection(),
+                      const SizedBox(height: 10),
+                      _buildExamesDisponiveisSection(),
+                    ],
+                  ),
                 ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                FontAwesomeIcons.list,
+                size: 20,
+                color: Colors.black, // Cor do ícone
+              ),
+              const SizedBox(width: 10), // Espaçamento entre o ícone e o texto
+              Text(
+                formatDate((avaliacaoData?['data'] as Timestamp).toDate()),
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 5),
+          Text(
+            avaliacaoData != null
+                ? "IMC: ${avaliacaoData!['imc'] != null ? avaliacaoData!['imc'].toStringAsFixed(2) : ''} - ${calcularCategoriaImc(avaliacaoData!['imc'])}"
+                : "",
+            style: const TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildComposicaoCorporalSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade300),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5.0,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream:
+              AvaliacaoResultadoController().getResultadoStream(avaliacaoId),
+          builder: (context, resultadoSnapshot) {
+            if (resultadoSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (resultadoSnapshot.hasError) {
+              return Center(
+                  child: Text(
+                      'Erro ao buscar resultados: ${resultadoSnapshot.error}'));
+            }
+
+            if (!resultadoSnapshot.hasData ||
+                resultadoSnapshot.data!.docs.isEmpty) {
+              return const Center(child: Text('Nenhum resultado encontrado'));
+            }
+
+            final resultado =
+                Resultado.fromJson(resultadoSnapshot.data!.docs.first.data());
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(15.0),
+                  child: Text(
+                    'Composição corporal',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Divider(height: 1, color: Colors.grey),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 5),
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: _buildComposicaoCard(
+                              'Gordura Corporal',
+                              '${resultado.pesoGordura.toStringAsFixed(2)} kg',
+                              '${resultado.perGordura.toStringAsFixed(2)}%')),
+                      const SizedBox(width: 2),
+                      Expanded(
+                          child: _buildComposicaoCard(
+                              'Massa Magra',
+                              '${resultado.pesoMagra.toStringAsFixed(2)} kg',
+                              '${resultado.perMagra.toStringAsFixed(2)}%')),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 5, 10, 10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child: _buildComposicaoCard(
+                              'Muscular',
+                              '${resultado.pesoMuscular.toStringAsFixed(2)} kg',
+                              '')),
+                      const SizedBox(width: 2),
+                      Expanded(
+                          child: _buildComposicaoCard(
+                              'Ósseo',
+                              '${resultado.pesoOsseo.toStringAsFixed(2)} kg',
+                              '')),
+                      const SizedBox(width: 2),
+                      Expanded(
+                          child: _buildComposicaoCard(
+                              'Residual',
+                              '${resultado.pesoResidual.toStringAsFixed(2)} kg',
+                              '')),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExamesDisponiveisSection() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade300),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade400,
+              blurRadius: 5.0,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(15.0),
+              child: Text(
+                'Exames Disponíveis',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const Divider(height: 1, color: Colors.grey),
+            ...exames.map((exame) => Card(
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 10.0),
+                  child: ListTile(
+                    title: Text(exame),
+                    onTap: () {
+                      Navigator.pushNamed(
+                          context,
+                          exame == 'Medidas corporais'
+                              ? 'avaliacao_medidas'
+                              : 'avaliacao_dobras',
+                          arguments: avaliacaoId);
+                    },
+                  ),
+                )),
+          ],
+        ),
+      ),
     );
   }
 
@@ -311,22 +296,22 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
         children: [
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 2),
+          const SizedBox(height: 2),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
             ),
           ),
           if (percentage.isNotEmpty)
             Text(
               percentage,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
               ),
             ),
@@ -347,9 +332,13 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
       } else if (imc >= 18.5 && imc < 25) {
         return "Peso Normal";
       } else if (imc >= 25 && imc < 30) {
-        return "Acima do Peso";
+        return "Sobrepeso";
+      } else if (imc >= 30 && imc < 35) {
+        return "Obesidade Grau I (Leve)";
+      } else if (imc >= 35 && imc < 40) {
+        return "Obesidade Grau II (Moderada)";
       } else {
-        return "Obeso";
+        return "Obesidade Grau III (Mórbida)";
       }
     }
     return "";

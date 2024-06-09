@@ -23,7 +23,7 @@ Future<void> main() async {
   runApp(
     DevicePreview(
       enabled: true,
-      builder: (context) => MainApp(),
+      builder: (context) => const MainApp(),
     ),
   );
 }
@@ -38,16 +38,15 @@ class MainApp extends StatelessWidget {
       title: 'Workout Wizard',
       initialRoute: 'login',
       routes: {
-        'avaliacao': (context) => AvaliacaoView(),
-        'avaliacao_exames': (context) => AvaliacaoExamesView(),
-        'avaliacao_dobras': (context) => AvaliacaoDobrasCutaneasView(),
-        'avaliacao_medidas': (context) => AvaliacaoMedidasCorporaisView(),
-        'login': (context) => LoginView(),
-        'treinos': (context) => TreinosView(),
-        'principal': (context) => PrincipalView(),
-        'sobre': (context) => Sobre(),
-        'cadastro': (context) => CadastroView(),
-
+        'avaliacao': (context) => const AvaliacaoView(),
+        'avaliacao_exames': (context) => const AvaliacaoExamesView(),
+        'avaliacao_dobras': (context) => const AvaliacaoDobrasCutaneasView(),
+        'avaliacao_medidas': (context) => const AvaliacaoMedidasCorporaisView(),
+        'login': (context) => const LoginView(),
+        'treinos': (context) => const TreinosView(),
+        'principal': (context) => const PrincipalView(),
+        'sobre': (context) => const Sobre(),
+        'cadastro': (context) => const CadastroView(),
       },
     );
   }

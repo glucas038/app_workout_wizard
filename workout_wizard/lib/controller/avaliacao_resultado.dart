@@ -33,7 +33,6 @@ class AvaliacaoResultadoController extends ChangeNotifier {
   }
 
   Future<Resultado> getResultado(String resultadoId, String avaliacaoId) {
-    print(resultadoId);
     return FirebaseFirestore.instance
         .collection('avaliacao')
         .doc(avaliacaoId)
@@ -49,14 +48,14 @@ class AvaliacaoResultadoController extends ChangeNotifier {
     });
   }
 
-  Stream<QuerySnapshot<Map<String, dynamic>>> getResultadoStream(String avaliacaoId) {
-  return FirebaseFirestore.instance
-      .collection('avaliacao')
-      .doc(avaliacaoId)
-      .collection('resultado')
-      .snapshots();
-}
-
+  Stream<QuerySnapshot<Map<String, dynamic>>> getResultadoStream(
+      String avaliacaoId) {
+    return FirebaseFirestore.instance
+        .collection('avaliacao')
+        .doc(avaliacaoId)
+        .collection('resultado')
+        .snapshots();
+  }
 
   Future<QuerySnapshot<Map<String, dynamic>>> listarResultado(
       String avaliacaoId) {

@@ -20,125 +20,114 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Avaliações físicas'),
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.green.shade200,
-        actions: [
-          IconButton(
-            onPressed: () {
-              LoginController().logout();
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.exit_to_app),
-          )
-        ],
+        title: const Text('Avaliações físicas',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color.fromARGB(255, 176, 225, 231),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: StreamBuilder<QuerySnapshot>(
           stream: AvaliacaoController().listarAvaliacao(),
           builder: (context, snapshot) {
-            switch (snapshot.connectionState) {
-              //sem conexão
-              case ConnectionState.none:
-                return Center(
-                  child: Text("Falha na conexão."),
-                );
-
-              //conexão lenta
-              case ConnectionState.waiting:
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-
-              //dados recuperados com sucesso
-              default:
-                if (snapshot.hasError) {
-                  return Center(child: Text('Erro: ${snapshot.error}'));
-                }
-
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(
-                    child: Text("Nenhuma avaliação encontrada."),
-                  );
-                }
-
-                final dados = snapshot.data!;
-                //exibir a lista de avaliações
-                return ListView.builder(
-                  itemCount: dados.size,
-                  itemBuilder: (context, index) {
-                    String docId = dados.docs[index].id;
-
-                    //DADOS armazenados no documento
-                    dynamic item = dados.docs[index].data();
-                    final DateTime date = (item['data'] as Timestamp).toDate();
-
-                    return Card(
-                      child: ListTile(
-                        title: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(formatDate(date)),
-                                Text(timeDifference(date)),
-                              ],
-                            ),
-                            Divider(), // Traço para dividir título do subtítulo
-                          ],
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Peso: ${item['peso']} kg'),
-                                Text('Altura: ${item['altura']} cm'),
-                              ],
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          print(docId);
-                          Navigator.pushNamed(context, 'avaliacao_exames',
-                              arguments: docId);
-                        },
-                      ),
-                    );
-                  },
-                );
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Erro: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Center(child: Text("Nenhuma avaliação encontrada."));
             }
+
+            final dados = snapshot.data!;
+            var filteredDocs = dados.docs;
+
+            // Ordenação por data
+            filteredDocs.sort((a, b) {
+              var itemA = a.data() as Map<String, dynamic>;
+              var itemB = b.data() as Map<String, dynamic>;
+              return itemA['data'].compareTo(itemB['data']);
+            });
+
+            return ListView.builder(
+              itemCount: filteredDocs.length,
+              itemBuilder: (context, index) {
+                String docId = filteredDocs[index].id;
+                dynamic item = filteredDocs[index].data();
+                final DateTime date = (item['data'] as Timestamp).toDate();
+
+                return _buildAvaliacaoCard(docId, item, date);
+              },
+            );
           },
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          salvarAvaliacao(context);
+          _showSaveAvaliacaoDialog(context);
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
-  void salvarAvaliacao(context) {
+  Widget _buildAvaliacaoCard(String docId, dynamic item, DateTime date) {
+    return Card(
+      child: ListTile(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(_formatDate(date)),
+                Text(_timeDifference(date)),
+              ],
+            ),
+            const Divider(), // Traço para dividir título do subtítulo
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Peso: ${item['peso']} kg'),
+                Text('Altura: ${item['altura']} cm'),
+              ],
+            ),
+          ],
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: () {
+            _showDeleteConfirmation(context, docId);
+          },
+        ),
+        onTap: () {
+          Navigator.pushNamed(context, 'avaliacao_exames', arguments: docId);
+        },
+      ),
+    );
+  }
+
+  void _showSaveAvaliacaoDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Nova Avaliação'),
+          title: const Text('Nova Avaliação'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: txtPeso,
-                decoration: InputDecoration(labelText: 'Peso'),
+                decoration: const InputDecoration(labelText: 'Peso'),
+                keyboardType: TextInputType.number,
               ),
               TextField(
                 controller: txtAltura,
-                decoration: InputDecoration(labelText: 'Altura'),
+                decoration: const InputDecoration(labelText: 'Altura'),
+                keyboardType: TextInputType.number,
               ),
             ],
           ),
@@ -149,7 +138,7 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
                 txtAltura.clear();
                 txtPeso.clear();
               },
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
@@ -161,14 +150,54 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
                   peso: peso,
                   altura: altura,
                   data: DateTime.now(),
-                  imc: (peso / (altura * altura)) *
-                      10000, // Adicionando data atual
+                  imc: (peso / (altura * altura)) * 10000,
                 );
                 AvaliacaoController().adicionarAvaliacao(context, avaliacao);
                 txtAltura.clear();
                 txtPeso.clear();
               },
-              child: Text('Salvar'),
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _saveAvaliacao(BuildContext context) {
+    double peso = double.parse(txtPeso.text);
+    double altura = double.parse(txtAltura.text);
+
+    var avaliacao = Avaliacao(
+      uid: LoginController().idUsuario(),
+      peso: peso,
+      altura: altura,
+      data: DateTime.now(),
+      imc: (peso / (altura * altura)) * 10000,
+    );
+    AvaliacaoController().adicionarAvaliacao(context, avaliacao);
+  }
+
+  void _showDeleteConfirmation(BuildContext context, String docId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Excluir Avaliação'),
+          content: const Text('Tem certeza que deseja excluir esta avaliação?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                AvaliacaoController().excluirAvaliacao(context, docId);
+                Navigator.pop(context);
+              },
+              child: const Text('Excluir'),
             ),
           ],
         );
@@ -177,13 +206,13 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
   }
 
   // Função para formatar a data
-  String formatDate(DateTime date) {
+  String _formatDate(DateTime date) {
     final DateFormat formatter = DateFormat('d MMMM, y', 'pt_BR');
     return formatter.format(date);
   }
 
   // Função para calcular a diferença de tempo
-  String timeDifference(DateTime date) {
+  String _timeDifference(DateTime date) {
     final Duration difference = DateTime.now().difference(date);
     if (difference.inDays < 30) {
       return '${difference.inDays} dias atrás';
@@ -192,5 +221,12 @@ class _AvaliacaoViewState extends State<AvaliacaoView> {
     } else {
       return '${(difference.inDays / 365).floor()} anos atrás';
     }
+  }
+
+  @override
+  void dispose() {
+    txtPeso.dispose();
+    txtAltura.dispose();
+    super.dispose();
   }
 }

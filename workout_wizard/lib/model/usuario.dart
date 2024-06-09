@@ -1,20 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:workout_wizard/model/endereco.dart';
 
 class Usuario {
   String? id;
   String nome;
   String sexo;
-  double idade;
+  DateTime dataNascimento;
   String cpf;
   Endereco endereco;
 
-  Usuario(this.nome, this.cpf, this.endereco, this.sexo, this.idade, {this.id});
+  Usuario(this.nome, this.cpf, this.endereco, this.sexo, this.dataNascimento,
+      {this.id});
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'sexo': sexo,
-      'idade': idade,
+      'dataNascimento': dataNascimento,
       'nome': nome,
       'cpf': cpf,
       'endereco': endereco.toJson(),
@@ -27,7 +29,7 @@ class Usuario {
       json['cpf'],
       Endereco.fromJson(json['endereco']),
       json['sexo'],
-      (json['idade'] as num?)?.toDouble() ?? 0.0,
+      (json['dataNascimento'] as Timestamp).toDate(),
       id: json['id'],
     );
   }

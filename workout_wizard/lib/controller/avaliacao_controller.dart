@@ -5,36 +5,28 @@ import 'package:workout_wizard/model/avaliacao.dart';
 import 'package:workout_wizard/view/util.dart';
 
 class AvaliacaoController {
-  void adicionarAvaliacao(context, Avaliacao avaliacao) {
-    String uid = LoginController().idUsuario();
-    if (uid != null) {
-      avaliacao.uid = uid; // Adiciona o UID do usuário à avaliação
-      FirebaseFirestore.instance
-          .collection('avaliacao')
-          .add(avaliacao.toJson())
-          .then((resultado) {
-        sucesso(context, 'Avaliação adicionada com sucesso!');
-        Navigator.pop(context);
-        Navigator.pushNamed(context, 'avaliacao_exames',
-            arguments: resultado.id);
-      }).catchError((erro) {
-        erro(context, 'Erro ao adicionar avaliação!');
+  void adicionarAvaliacao(BuildContext context, Avaliacao avaliacao) {
+    FirebaseFirestore.instance
+        .collection('avaliacao')
+        .add(avaliacao.toJson())
+        .then((resultado) {
+      sucesso(context, 'Avaliação adicionada com sucesso!');
+      // Navigator.pop(context) será chamado dentro da função abaixo
+      Navigator.pushNamed(context, 'avaliacao_exames', arguments: resultado.id)
+          .then((_) {
+        Navigator.pop(context); // Fechar o dialog após a navegação bem-sucedida
       });
-    } else {
-      erro(context, 'Usuário não está logado.');
-    }
+    }).catchError((erro) {
+      erro(context, 'Erro ao adicionar avaliação!');
+    });
   }
 
   Stream<QuerySnapshot> listarAvaliacao() {
     String uid = LoginController().idUsuario();
-    if (uid != null) {
-      return FirebaseFirestore.instance
-          .collection('avaliacao')
-          .where('uid', isEqualTo: uid)
-          .snapshots();
-    } else {
-      throw Exception('Usuário não está logado.');
-    }
+    return FirebaseFirestore.instance
+        .collection('avaliacao')
+        .where('uid', isEqualTo: uid)
+        .snapshots();
   }
 
   DocumentReference pegarAvaliacao(String docId) {
@@ -42,7 +34,6 @@ class AvaliacaoController {
   }
 
   Future<Avaliacao> getAvaliacao(String avaliacaoId) {
-    print(avaliacaoId);
     return FirebaseFirestore.instance
         .collection('avaliacao')
         .doc(avaliacaoId)
@@ -56,7 +47,7 @@ class AvaliacaoController {
     });
   }
 
-  void atualizarAvaliacao(context, Avaliacao avaliacao, String docId) {
+  void atualizarAvaliacao(BuildContext context, Avaliacao avaliacao, String docId) {
     FirebaseFirestore.instance
         .collection('avaliacao')
         .doc(docId)
@@ -66,6 +57,18 @@ class AvaliacaoController {
       Navigator.pop(context);
     }).catchError((erro) {
       erro(context, 'Erro ao atualizar avaliação!');
+    });
+  }
+
+  void excluirAvaliacao(BuildContext context, String id) {
+    FirebaseFirestore.instance
+        .collection('avaliacao')
+        .doc(id)
+        .delete()
+        .then((_) {
+      sucesso(context, 'Avaliação excluída com sucesso!');
+    }).catchError((erro) {
+      erro(context, 'Erro ao excluir avaliação!');
     });
   }
 }
