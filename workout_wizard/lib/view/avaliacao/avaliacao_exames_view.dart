@@ -320,8 +320,25 @@ class _AvaliacaoExamesViewState extends State<AvaliacaoExamesView> {
   }
 
   String formatDate(DateTime date) {
-    final DateFormat formatter = DateFormat('d MMMM, y', 'pt_BR');
-    return formatter.format(date);
+    final List<String> months = [
+      'janeiro',
+      'fevereiro',
+      'março',
+      'abril',
+      'maio',
+      'junho',
+      'julho',
+      'agosto',
+      'setembro',
+      'outubro',
+      'novembro',
+      'dezembro'
+    ];
+    final String day = date.day.toString();
+    final String month = months[date.month - 1];
+    final String year = date.year.toString();
+
+    return '$day de $month de $year';
   }
 
   String calcularCategoriaImc(double? imc) {
