@@ -15,7 +15,7 @@ class TreinoController {
         .whenComplete(() => Navigator.pop(context));
   }
 
-  //Listar todas as Treinos do Usuário autenticado
+  // Listar todos os Treinos do Usuário autenticado
   listar() {
     return FirebaseFirestore.instance
         .collection('treino')
@@ -32,12 +32,23 @@ class TreinoController {
         .whenComplete(() => Navigator.pop(context));
   }
 
-  void excluir(context, id) {
-    FirebaseFirestore.instance
-        .collection('treino')
-        .doc(id)
-        .delete()
-        .then((resultado) => sucesso(context, 'Treino excluído com sucesso'))
-        .catchError((e) => erro(context, 'Não foi possível excluir o Treino'));
+  void excluir(context, id) async {
+    try {
+      DocumentReference treinoRef =
+          FirebaseFirestore.instance.collection('treino').doc(id);
+
+      QuerySnapshot exerciciosSnapshot =
+          await treinoRef.collection('exercicios').get();
+
+      for (DocumentSnapshot doc in exerciciosSnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      await treinoRef.delete();
+
+      sucesso(context, 'Treino excluído com sucesso');
+    } catch (e) {
+      erro(context, 'Não foi possível excluir o Treino');
+    }
   }
 }
